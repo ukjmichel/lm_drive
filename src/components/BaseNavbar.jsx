@@ -61,7 +61,7 @@ const BaseNavbar = () => {
               fontFamily={'heading'}
               color={useColorModeValue('gray.800', 'white')}
             >
-              Logo
+              Lao Market
             </Text>
           </NavLink>
 

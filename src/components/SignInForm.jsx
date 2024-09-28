@@ -15,9 +15,8 @@ import {
 import { useState } from 'react';
 import { useAuth } from '../hook/AuthContext';
 
-
 const SignInForm = () => {
-  const { login, auth } = useAuth();
+  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 

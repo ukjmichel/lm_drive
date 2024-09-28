@@ -1,21 +1,43 @@
-import { useEffect } from 'react';
-import { useAuth } from '../hook/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { BaseLayout } from '../components';
+import { useEffect, useState } from 'react';
+import { BaseLayout, ProductAddToCart } from '../components';
+import { fetchAllProducts } from '../api/apiClient';
+import { Flex } from '@chakra-ui/react';
+
 
 const StorePage = () => {
-  const { auth } = useAuth();
-  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [error, setError] = useState(null);
+
+  const getProduct = async () => {
+    try {
+      const response = await fetchAllProducts();
+      setProducts(response);
+    } catch (error) {
+      setError(error);
+    }
+  };
 
   useEffect(() => {
-    if (!auth) {
-      navigate('/');
-    }
-  }, [auth]);
+    getProduct();
+  }, []);
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <>
-      <BaseLayout />
+      <BaseLayout>
+        <Flex gap={4}>
+          {products.length > 0 ? (
+            products.map((product) => (
+              <ProductAddToCart key={product.product_id} {...product} />
+            ))
+          ) : (
+            <div>Loading...</div>
+          )}
+        </Flex>
+      </BaseLayout>
     </>
   );
 };

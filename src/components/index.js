@@ -5,6 +5,7 @@ import BaseFooter from './BaseFooter';
 import ConnectedNavbar from './ConnectedNavbar';
 import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
+import ProductAddToCart from './ProductAddToCart';
 
 export {
   BaseLayout,
@@ -14,4 +15,5 @@ export {
   ConnectedNavbar,
   SignInForm,
   SignUpForm,
+  ProductAddToCart,
 };

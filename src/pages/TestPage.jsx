@@ -1,40 +1,23 @@
 import { Button, Flex } from '@chakra-ui/react';
 import { BaseLayout } from '../components';
-import axios from 'axios';
 import { useState } from 'react';
-
-const login = async (username, password) => {
-  try {
-    const response = await axios.post('http://127.0.0.1:8000/api/token/', {
-      username,
-      password,
-    });
-
-    if (response.status === 200) {
-      // Successful login, store token in local storage
-      console.log(response);
-      localStorage.setItem('access', response.data.access);
-      return response; // Optionally return the response for further processing
-    } else {
-      throw new Error('Login failed: ' + response.statusText); // Handle non-200 status codes
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    // Handle error gracefully, e.g., display an error message to the user
-    throw error; // Re-throw the error for further handling if needed
-  }
-};
+import {
+  fetchAllProducts,
+  getCustomerOrder,
+  createCustomerOrder,
+} from '../api/apiClient';
 
 const TestPage = () => {
-  const [errorMessage, setErrorMessage] = useState(null); // State for error message
+  const [errorMessage, setErrorMessage, customerId] = useState(null); // State for error message
+  const token = localStorage.getItem('access');
 
-  const handleLogin = async (username, password) => {
+  const handleLogin = async () => {
     try {
-      const response = await login(username, password);
+      const response = await createCustomerOrder(token, customerId);
       // Handle successful login (e.g., redirect to another page)
-      console.log('Login successful:', response); // Replace with redirect logic
+      console.log(response); // Replace with redirect logic
     } catch (error) {
-      setErrorMessage(error.message || 'Login failed'); // Set error message
+      console.log(error);
     }
   };
 
