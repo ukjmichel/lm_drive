@@ -11,9 +11,10 @@ import {
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [auth, setAuth] = useState(null);
-  const [customerId, setCustomerId] = useState(null);
-  const [customerOrder, setCustomerOrder] = useState(null);
+  const [auth, setAuth] = useState();
+  const [token, setToken] = useState();
+  const [customerId, setCustomerId] = useState();
+  const [customerOrder, setCustomerOrder] = useState();
 
   const login = async (username, password) => {
     try {
@@ -29,26 +30,31 @@ const AuthProvider = ({ children }) => {
 
         // Store the access token in localStorage
         localStorage.setItem('access', accessToken);
+        setToken(accessToken);
         setAuth(true); // Assuming setAuth is a state setter for authentication status
 
         // Fetch customer data using the access token
         const customerData = await fetchCustomerData(accessToken);
-        console.log(`Customer ID: ${customerData[0]?.customer_id}`);
+        console.log('Customer Data:', customerData);
 
         // Check if customerData is valid and not empty
         if (customerData && customerData.length > 0) {
+          localStorage.setItem('customerId', customerData[0].customer_id);
           setCustomerId(customerData[0].customer_id); // Set customer ID in state
+          console.log(`Customer ID: ${customerData[0].customer_id}`);
         } else {
           throw new Error('Customer data is empty or invalid');
         }
 
         // Fetch customer order using the access token
         let customerOrderData = await getCustomerOrder(accessToken);
+        console.log('Customer Order Data:', customerOrderData);
 
         // Assuming you are storing the order ID in state
         if (customerOrderData && customerOrderData.length > 0) {
-          console.log(`Order ID: ${customerOrderData[0].order_id}`);
+          localStorage.setItem('orderId', customerOrderData[0].order_id);
           setCustomerOrder(customerOrderData[0].order_id);
+          console.log(`Order ID: ${customerOrderData[0].order_id}`);
         } else {
           // Create a new customer order if none exists
           const customerId = customerData[0].customer_id; // Make sure customerId is defined
@@ -56,8 +62,9 @@ const AuthProvider = ({ children }) => {
             accessToken,
             customerId
           );
-          console.log(`Created Order ID: ${customerOrderData.order_id}`);
+          localStorage.setItem('orderId', customerOrder.customer_id);
           setCustomerOrder(customerOrderData.order_id);
+          console.log(`Created Order ID: ${customerOrderData.order_id}`);
         }
       } else {
         // Handle non-200 status codes by throwing an error
@@ -79,6 +86,8 @@ const AuthProvider = ({ children }) => {
       // Logout logic here
       setAuth(null);
       localStorage.removeItem('access');
+      localStorage.removeItem('orderId');
+      localStorage.removeItem('customerId');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -86,13 +95,24 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('access');
+    const customerIdFromLs = localStorage.getItem('customerId');
+    const orderIdFromLs = localStorage.getItem('orderId');
     if (token) {
       setAuth(true);
+      setToken(token);
+    }
+    if (customerIdFromLs) {
+      setAuth(customerIdFromLs);
+    }
+    if (orderIdFromLs) {
+      setAuth(orderIdFromLs);
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider
+      value={{ auth, login, logout, customerId, customerOrder, token }}
+    >
       {children}
     </AuthContext.Provider>
   );

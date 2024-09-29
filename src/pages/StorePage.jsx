@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react';
 import { BaseLayout, ProductAddToCart } from '../components';
-import { fetchAllProducts } from '../api/apiClient';
+import { fetchAllProducts, getCustomerOrder } from '../api/apiClient';
 import { Flex } from '@chakra-ui/react';
-
 
 const StorePage = () => {
   const [products, setProducts] = useState([]);
-  const [error, setError] = useState(null);
+  const [orderId, setOrderId] = useState();
 
   const getProduct = async () => {
     try {
       const response = await fetchAllProducts();
       setProducts(response);
     } catch (error) {
-      setError(error);
+      console.log('Error:', error);
+    }
+  };
+
+  const getOrderId = async () => {
+    try {
+      const response = await getCustomerOrder();
+      setOrderId(response[0].order_id);
+    } catch (error) {
+      console.log('Error:', error);
     }
   };
 
@@ -21,9 +29,9 @@ const StorePage = () => {
     getProduct();
   }, []);
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  useEffect(() => {
+    getOrderId();
+  }, []);
 
   return (
     <>
@@ -31,7 +39,11 @@ const StorePage = () => {
         <Flex gap={4}>
           {products.length > 0 ? (
             products.map((product) => (
-              <ProductAddToCart key={product.product_id} {...product} />
+              <ProductAddToCart
+                key={product.product_id}
+                orderId={orderId}
+                {...product}
+              />
             ))
           ) : (
             <div>Loading...</div>

@@ -6,6 +6,7 @@ import ConnectedNavbar from './ConnectedNavbar';
 import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
 import ProductAddToCart from './ProductAddToCart';
+import OrderLine from './OrderLine';
 
 export {
   BaseLayout,
@@ -16,4 +17,5 @@ export {
   SignInForm,
   SignUpForm,
   ProductAddToCart,
+  OrderLine,
 };

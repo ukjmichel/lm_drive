@@ -37,7 +37,8 @@ export const fetchCustomerData = async (token) => {
 };
 
 // Get customer order
-export const getCustomerOrder = async (token) => {
+export const getCustomerOrder = async () => {
+  const token = localStorage.getItem('access');
   try {
     const response = await axios.get(import.meta.env.VITE_API_ORDER, {
       headers: {
@@ -83,3 +84,36 @@ export const createCustomerOrder = async (token, customerId) => {
     return { error: 'Failed to create order' }; // Return error message
   }
 };
+
+export const addItemToOrder = async (orderId, product_id, quantity) => {
+  const url = `${import.meta.env.VITE_API_ORDER}${orderId}/items/`; // Adjust the URL as needed
+  const token = localStorage.getItem('access');
+  console.log(url);
+
+  try {
+    const response = await axios.post(
+      url,
+      {
+        order_id: orderId,
+        product_id: product_id,
+        quantity: quantity,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Set the authorization token in the headers
+          'Content-Type': 'application/json', // Set the content type to JSON
+        },
+      }
+    );
+
+    return response.data; // Return the response data
+  } catch (error) {
+    console.error(
+      'Error adding item to order:',
+      error.response ? error.response.data : error.message
+    );
+    throw error; // Rethrow the error for handling in the calling function
+  }
+};
+
+export default addItemToOrder;

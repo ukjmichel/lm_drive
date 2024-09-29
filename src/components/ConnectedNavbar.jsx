@@ -95,21 +95,20 @@ const ConnectedNavbar = () => {
           >
             Se déconnecter
           </Button>
-
-          <Button
-            as={'a'}
-            display={'inline-flex'}
-            fontSize={'2xl'}
-            fontWeight={600}
-            color={'white'}
-            bg={'pink.400'}
-            href={'#'}
-            _hover={{
-              bg: 'pink.300',
-            }}
-          >
-            <Icon as={IoIosBasket} p={0} />
-          </Button>
+          <NavLink to="/cart">
+            <Button
+              display={'inline-flex'}
+              fontSize={'2xl'}
+              fontWeight={600}
+              color={'white'}
+              bg={'pink.400'}
+              _hover={{
+                bg: 'pink.300',
+              }}
+            >
+              <Icon as={IoIosBasket} p={0} />
+            </Button>
+          </NavLink>
         </Stack>
       </Flex>
 
