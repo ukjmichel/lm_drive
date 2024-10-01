@@ -1,31 +1,31 @@
 import { Box, Flex } from '@chakra-ui/react';
 import { BaseLayout, OrderLine } from '../components';
-import { useAuth } from '../hook/AuthContext';
-import { getCustomerOrder } from '../api/apiClient';
+import { getCustomerOrders, getCustomerOrder } from '../api/apiClient';
 import { useState, useEffect } from 'react';
 
 const OrderDetailPage = () => {
-  const { token } = useAuth();
   const [order, setOrder] = useState({}); // You can initialize it with null or empty values.
   const { order_id, items = [], total_amount } = order; // Set items to an empty array by default.
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const response = await getCustomerOrder(token);
-        if (response && response.length > 0) {
-          setOrder(response[0]);
-        }
+        const response = await getCustomerOrders();
+        const pendingOrder = response.filter(
+          (order) => order.status === 'pending'
+        );
+        console.log(pendingOrder[0].order_id);
+        const pendingOrderDetail = await getCustomerOrder(
+          pendingOrder[0].order_id
+        );
+        console.log(pendingOrderDetail);
+        setOrder(pendingOrderDetail);
       } catch (error) {
         console.error('Error fetching order:', error);
       }
     };
-
-    if (token) {
-      // Ensure token is available before fetching the order.
-      fetchOrder();
-    }
-  }, [token]);
+    fetchOrder();
+  }, []);
 
   return (
     <BaseLayout>
@@ -37,9 +37,13 @@ const OrderDetailPage = () => {
       <Box>
         {/* Check if items exist and map over them */}
         {items.length > 0 ? (
-          items.map((item, index) => (
-            <OrderLine key={item.id || index} {...item} /> // Provide a unique key
-          ))
+          items.map(
+            (item, index) => (
+              <OrderLine key={item.id} {...item} order_id={order_id} />
+            )
+
+            // Provide a unique key
+          )
         ) : (
           <Box>No items in the order.</Box> // Display a message if no items exist
         )}

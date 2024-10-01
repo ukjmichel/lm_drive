@@ -5,11 +5,13 @@ import {
   OrderDetailPage,
   SignInPage,
   SignUpPage,
+  StoreListPage,
   StorePage,
   TestPage,
 } from './pages';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './hook/AuthContext';
+import { OrdersListPage } from './pages/admin';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
               <Route path="/store" element={<StorePage />} />
               <Route path="/cart" element={<OrderDetailPage />} />
               <Route path="/test" element={<TestPage />} />
+              <Route path="/admin/orders" element={<OrdersListPage />} />
+              <Route path="/store/:id" element={<StoreListPage />} />
             </Routes>
           </ChakraProvider>
         </BrowserRouter>

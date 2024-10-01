@@ -1,5 +1,6 @@
 import HomePage from './HomePage';
 import StorePage from './StorePage';
+import StoreListPage from './StoreListPage';
 import SignInPage from './SignInPage';
 import SignUpPage from './SignUpPage';
 import TestPage from './TestPage';
@@ -12,4 +13,5 @@ export {
   StorePage,
   TestPage,
   OrderDetailPage,
+  StoreListPage,
 };
