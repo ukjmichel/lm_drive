@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   CardBody,
@@ -32,7 +32,7 @@ const ProductAddToCart = ({
   const navigate = useNavigate();
   const priceValue = parseFloat(price); // Convert to float
   const formattedPrice = !isNaN(priceValue) ? priceValue.toFixed(2) : '0.00'; // Format price
-  const auth = useAuth();
+  const { auth } = useAuth();
 
   const handleAddToCart = async () => {
     if (auth) {

@@ -1,65 +1,136 @@
-// AuthContext.jsx
 import axios from 'axios';
 import { createContext, useState, useEffect, useContext } from 'react';
+import { jwtDecode } from 'jwt-decode'; // Import jwtDecode from jwt-decode
 
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [auth, setAuth] = useState();
+  const [auth, setAuth] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const login = async (username, password) => {
     try {
-      // Make a POST request to the token URL with username and password
       const response = await axios.post(import.meta.env.VITE_API_TOKEN_URL, {
         username,
         password,
       });
 
-      // Check if the response status is 200 (successful)
       if (response.status === 200) {
         const accessToken = response.data.access;
-        const resfreshToken = response.data.refresh;
+        const refreshToken = response.data.refresh;
 
-        // Store the access token in localStorage
         localStorage.setItem('access', accessToken);
-        localStorage.setItem('refresh', resfreshToken);
-        setAuth(true); // Assuming setAuth is a state setter for authentication status
+        localStorage.setItem('refresh', refreshToken);
+        setAuth(true);
 
-        // Assuming you are storing the order ID in state
+        const decodedToken = jwtDecode(accessToken);
+
+        if (decodedToken.is_admin) {
+          setIsAdmin(true);
+        }
       } else {
-        // Handle non-200 status codes by throwing an error
         throw new Error(
           `Login failed: ${response.status} ${response.statusText}`
         );
       }
     } catch (error) {
-      // Log the error message
       console.error('Login error:', error.message || error);
-
-      // Handle the error appropriately (e.g., display an error message to the user)
-      throw error; // Re-throw the error for higher-level handling if needed
+      throw error;
     }
   };
 
   const logout = async () => {
     try {
-      // Logout logic here
-      setAuth(null);
+      setAuth(false);
+      setIsAdmin(false);
       localStorage.removeItem('access');
+      localStorage.removeItem('refresh');
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('access');
-    if (storedToken) {
-      setAuth(true);
+  const decodeToken = (token) => {
+    try {
+      const decoded = jwtDecode(token);
+      return decoded;
+    } catch (error) {
+      console.error('Invalid token:', error);
+      return null;
     }
+  };
+
+  const refreshAccessToken = async (refreshToken) => {
+    try {
+      const response = await axios.post(import.meta.env.VITE_API_REFRESH_URL, {
+        refresh: refreshToken,
+      });
+
+      if (response.status === 200) {
+        const newAccessToken = response.data.access;
+        return newAccessToken;
+      }
+    } catch (error) {
+      console.error('Error refreshing access token:', error);
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const storedAccessToken = localStorage.getItem('access');
+      const storedRefreshToken = localStorage.getItem('refresh');
+
+      if (storedAccessToken) {
+        try {
+          const decodedToken = jwtDecode(storedAccessToken);
+
+          const currentTime = Date.now() / 1000;
+          if (decodedToken.exp > currentTime) {
+            setAuth(true);
+
+            if (decodedToken.is_admin) {
+              setIsAdmin(true);
+            } else {
+              setIsAdmin(false);
+            }
+          } else if (storedRefreshToken) {
+            const newAccessToken = await refreshAccessToken(storedRefreshToken);
+            if (newAccessToken) {
+              localStorage.setItem('access', newAccessToken);
+              const decodedNewToken = jwtDecode(newAccessToken);
+
+              setAuth(true);
+              if (decodedNewToken.is_admin) {
+                setIsAdmin(true);
+              } else {
+                setIsAdmin(false);
+              }
+            } else {
+              setAuth(false);
+            }
+          } else {
+            setAuth(false);
+          }
+        } catch (error) {
+          console.error('Error decoding token:', error);
+          setAuth(false);
+        }
+      } else {
+        setAuth(false);
+      }
+    };
+
+    checkToken();
   }, []);
 
+  // Add useEffect to log isAdmin state change
+  useEffect(() => {
+    console.log('isAdmin state changed:', isAdmin);
+  }, [isAdmin]);
+
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={{ auth, isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,6 +7,7 @@ import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
 import ProductAddToCart from './ProductAddToCart';
 import OrderLine from './OrderLine';
+import AdminNavbar from './AdminNavBar';
 
 export {
   BaseLayout,
@@ -18,4 +19,5 @@ export {
   SignUpForm,
   ProductAddToCart,
   OrderLine,
+  AdminNavbar,
 };
