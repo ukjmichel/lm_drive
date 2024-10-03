@@ -1,34 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'; // Import useParams
-import { BaseLayout, OrderLine } from '../../components';
-import { getCustomerOrders } from '../../api/apiClient';
-import { Box, Flex, Heading, Checkbox } from '@chakra-ui/react';
+import { BaseLayout } from '../../components';
+import { getCustomerOrder } from '../../api/apiClient';
+import { Box, Flex, Checkbox, Text } from '@chakra-ui/react';
 
 const OrdersListPage = () => {
   const { orderId } = useParams(); // Retrieve order ID from URL
-  const [pendingOrders, setPendingOrders] = useState([]);
+  const [order, setOrder] = useState();
+  const [orderItems, setOrderItems] = useState([]);
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [finalCheckboxChecked, setFinalCheckboxChecked] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await getCustomerOrders();
-        if (response.status === 200) {
-          // If orderId is provided, filter for that specific order
-          if (orderId) {
-            const specificOrder = response.data.find(
-              (order) => order.order_id === orderId
-            );
-            if (specificOrder) {
-              setPendingOrders([specificOrder]); // Set specific order if found
-            }
-          } else {
-            // No specific orderId, filter for pending orders
-            setPendingOrders(
-              response.data.filter((order) => order.status === 'pending')
-            );
-          }
-        }
-        console.log(response);
+        const response = await getCustomerOrder(orderId);
+        console.log(response.items);
+        setOrder(response); // Set specific order if found
+        setOrderItems(response.items);
+        setCheckedItems(new Array(response.items.length).fill(false)); // Initialize checkbox state
       } catch (error) {
         console.error('Error fetching orders:', error);
       }
@@ -37,29 +27,58 @@ const OrdersListPage = () => {
     fetchOrders();
   }, [orderId]); // Add orderId as a dependency
 
+  // Function to handle individual checkbox changes
+  const handleCheckboxChange = (index) => {
+    const updatedCheckedItems = [...checkedItems];
+    updatedCheckedItems[index] = !updatedCheckedItems[index];
+    setCheckedItems(updatedCheckedItems);
+  };
+
+  // Function to check if all checkboxes are validated
+  const allChecked = checkedItems.every(Boolean);
+
   return (
     <BaseLayout>
       <Flex margin={4} gap={4}>
         <Box>Numéros de commande</Box>
-        {/* Ensure orderId is logged for debugging */}
-        <Box>{orderId ? orderId.toUpperCase() : 'N/A'}</Box>{' '}
-        {/* Convert orderId to uppercase */}
+        <Box>{orderId ? orderId.toUpperCase() : 'N/A'}</Box>
       </Flex>
-      {pendingOrders.length > 0 ? (
-        pendingOrders.map(({ order_id, items }) => (
-          <Box key={order_id}>
-            <Heading>{order_id}</Heading>
-            {items.map((item) => (
-              <Flex key={item.id} align="center">
-                <OrderLine {...item} order_id={orderId} />
-                <Checkbox ml={4} />
-              </Flex>
-            ))}
+
+      {orderItems.map(({ id, product, quantity }, index) => (
+        <Flex
+          key={id}
+          gap={4}
+          margin={4}
+          borderBottom="1px solid"
+          borderColor="gray.200"
+          py={2}
+        >
+          <Flex width="350px">
+            <Box width="100px">{product.product_name}</Box>
+            <Box width="100px">{product.brand}</Box>
+            <Box width="40px">{quantity}</Box>
+            <Box width="100px">{product.price}</Box>
+          </Flex>
+          <Checkbox
+            isChecked={checkedItems[index]}
+            isDisabled={finalCheckboxChecked} // Disable when the final checkbox is checked
+            onChange={() => handleCheckboxChange(index)}
+          />
+        </Flex>
+      ))}
+
+      <Flex margin={4} gap={4}>
+        <Flex width="350px">
+          <Box>
+            <Text>Commande prête</Text>
           </Box>
-        ))
-      ) : (
-        <div>No orders found</div>
-      )}
+        </Flex>
+        <Checkbox
+          isChecked={finalCheckboxChecked}
+          isDisabled={!allChecked} // Enable only when all other checkboxes are checked
+          onChange={() => setFinalCheckboxChecked(!finalCheckboxChecked)}
+        />
+      </Flex>
     </BaseLayout>
   );
 };

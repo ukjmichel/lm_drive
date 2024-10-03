@@ -11,7 +11,7 @@ import {
 } from './pages';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './hook/AuthContext';
-import { OrdersListPage, AdminOrderDetailPage } from './pages/admin';
+import { AdminOrdersListPage, AdminOrderDetailPage } from './pages/admin';
 
 function App() {
   return (
@@ -26,7 +26,7 @@ function App() {
               <Route path="/store" element={<StorePage />} />
               <Route path="/cart" element={<OrderDetailPage />} />
               <Route path="/test" element={<TestPage />} />
-              <Route path="/admin/orders" element={<OrdersListPage />} />
+              <Route path="/admin/orders" element={<AdminOrdersListPage />} />
               <Route
                 path="/admin/orders/:orderId"
                 element={<AdminOrderDetailPage />}

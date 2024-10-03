@@ -1,4 +1,4 @@
-import OrdersListPage from './OrdersListPage';
+import AdminOrdersListPage from './AdminOrdersListPage';
 import AdminOrderDetailPage from './AdminOrderDetailPage';
 
-export { OrdersListPage, AdminOrderDetailPage };
+export { AdminOrdersListPage, AdminOrderDetailPage };
