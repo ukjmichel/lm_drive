@@ -1,11 +1,11 @@
-import { BaseHero, BaseLayout } from '../components';
-
+import { BaseHero, BaseLayout, MapComponent } from '../components';
 
 const HomePage = () => {
   return (
     <>
       <BaseLayout>
         <BaseHero />
+        <MapComponent />
       </BaseLayout>
     </>
   );

@@ -124,11 +124,6 @@ const AuthProvider = ({ children }) => {
     checkToken();
   }, []);
 
-  // Add useEffect to log isAdmin state change
-  useEffect(() => {
-    console.log('isAdmin state changed:', isAdmin);
-  }, [isAdmin]);
-
   return (
     <AuthContext.Provider value={{ auth, isAdmin, login, logout }}>
       {children}

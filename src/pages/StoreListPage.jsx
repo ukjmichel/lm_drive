@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { BaseLayout, ProductAddToCart } from '../components';
-import { fetchAllProducts, getCustomerOrders } from '../api/apiClient';
+import {
+  createCustomerOrder,
+  fetchAllProducts,
+  getCustomerOrders,
+} from '../api/apiClient';
 import { Flex, Fade } from '@chakra-ui/react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../hook/AuthContext';
@@ -24,25 +28,28 @@ const StoreListPage = () => {
     }
   };
 
-  const getOrderId = async () => {
-    try {
-      const response = await getCustomerOrders();
-      const PendingOrder = response.filter(
-        (order) => order.status === 'pending'
-      );
-      setOrderId(PendingOrder[0].order_id);
-    } catch (error) {
-      console.log('Error:', error);
-    }
-  };
+  // const getOrderId = async () => {
+  //   try {
+  //     const response = await getCustomerOrders();
+  //     const pendingOrder = response.filter(
+  //       (order) => order.status === 'pending'
+  //     );
+  //     if (pendingOrder.length === 0) {
+  //       pendingOrder = await createCustomerOrder();
+  //     }
+  //     setOrderId(pendingOrder[0].order_id);
+  //   } catch (error) {
+  //     console.log('Error:', error);
+  //   }
+  // };
 
   useEffect(() => {
     getProduct();
-  }, [location]);
+  }, []);
 
   useEffect(() => {
     getOrderId();
-  }, [location]);
+  }, []);
 
   return (
     <BaseLayout>

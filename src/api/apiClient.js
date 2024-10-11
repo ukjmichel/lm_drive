@@ -145,8 +145,8 @@ export const getCustomerOrder = async (orderId) => {
 // Create customer order
 export const createCustomerOrder = async (token, customerId) => {
   try {
-    const response = await axios.post(
-      import.meta.env.VITE_API_ORDER, // Your API endpoint
+    const response = await apiClient.post(
+      'api/orders/',
       {
         customer_id: customerId, // The customer ID
         items: [], // Empty items array for an empty order

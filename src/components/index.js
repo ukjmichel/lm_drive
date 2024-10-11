@@ -8,6 +8,7 @@ import SignUpForm from './SignUpForm';
 import ProductAddToCart from './ProductAddToCart';
 import OrderLine from './OrderLine';
 import AdminNavbar from './AdminNavBar';
+import MapComponent from './MapComponent';
 
 export {
   BaseLayout,
@@ -20,4 +21,5 @@ export {
   ProductAddToCart,
   OrderLine,
   AdminNavbar,
+  MapComponent,
 };
