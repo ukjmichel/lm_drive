@@ -95,6 +95,35 @@ apiClient.interceptors.response.use(
   }
 );
 
+export const getToken = async (username, password) => {
+  try {
+    const response = await apiClient.post('api/token/', {
+      username,
+      password,
+    });
+    return response;
+  } catch (error) {
+    console.error('Login error:', error.message || error);
+    throw error;
+  }
+};
+export const createAccount = async ({ username, password, email }) => {
+  console.log(username, password, email);
+  try {
+    const response = await apiClient.post('api/customers/', {
+      user: {
+        username: username,
+        password: password,
+      },
+      email: email,
+    });
+    return response;
+  } catch (error) {
+    console.error('Signup error:', error.message || error);
+    throw error;
+  }
+};
+
 // Fetch all products
 export const fetchAllProducts = async () => {
   try {

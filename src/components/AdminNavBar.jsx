@@ -66,17 +66,23 @@ const AdminNavbar = () => {
         </Flex>
 
         <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
-          <NavLink to="/">
-            <Text
-              textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
-              fontFamily={'heading'}
-              color={useColorModeValue('gray.800', 'white')}
-            >
-              Lao Market
-            </Text>
-          </NavLink>
-
-          <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
+          <Flex
+            display={{ base: 'none', md: 'flex' }}
+            ml={4}
+            gap={6}
+            alignItems={'center'}
+          >
+            <NavLink to="/">
+              <Text
+                textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
+                fontFamily={'heading'}
+                color={'white'}
+                bg={'blue.400'}
+                p={2}
+              >
+                LAO MARKET
+              </Text>
+            </NavLink>
             <DesktopNav />
           </Flex>
         </Flex>
@@ -90,7 +96,9 @@ const AdminNavbar = () => {
           <Button
             fontSize={'sm'}
             fontWeight={400}
-            variant={'link'}
+            bg={'blue.400'}
+            color={'white'}
+            _hover={{ bg: 'blue.300' }}
             onClick={() => handleLogout()}
           >
             Se déconnecter

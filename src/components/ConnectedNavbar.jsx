@@ -66,17 +66,23 @@ const ConnectedNavbar = () => {
         </Flex>
 
         <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
-          <NavLink to="/">
-            <Text
-              textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
-              fontFamily={'heading'}
-              color={useColorModeValue('gray.800', 'white')}
-            >
-              Lao Market
-            </Text>
-          </NavLink>
-
-          <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
+          <Flex
+            display={{ base: 'none', md: 'flex' }}
+            ml={4}
+            gap={6}
+            alignItems={'center'}
+          >
+            <NavLink to="/">
+              <Text
+                textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
+                fontFamily={'heading'}
+                color={'white'}
+                bg={'blue.400'}
+                p={2}
+              >
+                LAO MARKET
+              </Text>
+            </NavLink>
             <DesktopNav />
           </Flex>
         </Flex>
@@ -101,9 +107,9 @@ const ConnectedNavbar = () => {
               fontSize={'2xl'}
               fontWeight={600}
               color={'white'}
-              bg={'pink.400'}
+              bg={'blue.400'}
               _hover={{
-                bg: 'pink.300',
+                bg: 'blue.300',
               }}
             >
               <Icon as={IoIosBasket} p={0} />

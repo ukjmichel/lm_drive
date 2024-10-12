@@ -1,4 +1,4 @@
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Text } from '@chakra-ui/react';
 import { BaseLayout, OrderLine } from '../components';
 import { getCustomerOrders, getCustomerOrder } from '../api/apiClient';
 import { useState, useEffect } from 'react';
@@ -29,9 +29,11 @@ const OrderDetailPage = () => {
 
   return (
     <BaseLayout>
-      <Flex margin={4} gap={4}>
-        <Box>Numéros de commande</Box>
-        <Box>{order_id || 'N/A'}</Box>{' '}
+      <Flex margin={4} gap={4} alignItems={'center'}>
+        <Heading fontSize={'xl'}>Numéros de commande: </Heading>
+        <Text textTransform="uppercase" fontSize={'xl'}>
+          {order_id || 'N/A'}
+        </Text>{' '}
         {/* Handle the case where order_id is not yet available */}
       </Flex>
       <Box>
@@ -47,6 +49,19 @@ const OrderDetailPage = () => {
         ) : (
           <Box>No items in the order.</Box> // Display a message if no items exist
         )}
+        <Flex
+          //justifyContent={'end'}
+          w={{ base: '100%' }}
+          p={4}
+          fontSize={18}
+          alignItems={'center'}
+          gap={32}
+        >
+          <Box>{`Total: ${total_amount} Euros`}</Box>
+          <Button bg={'green.400'} color={'white'} _hover={{ bg: 'green.300' }}>
+            Valider commande
+          </Button>
+        </Flex>
       </Box>
     </BaseLayout>
   );

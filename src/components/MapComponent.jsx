@@ -16,7 +16,6 @@ import {
 import L from 'leaflet';
 import { FaInstagram, FaFacebook } from 'react-icons/fa';
 
-
 // Set up the marker icon (default leaflet marker icon setup)
 const icon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
@@ -29,14 +28,14 @@ const icon = L.icon({
 const googleMapsLink = 'https://maps.app.goo.gl/72P9ZjBAiwrsEonw7';
 
 const MapComponent = () => {
-  const position = [45.990740174373386, 4.721768149075462]; // Default position (London)
+  const position = [45.990740174373386, 4.721768149075462]; // Default position (LAO Market)
 
   return (
     <Box p={5}>
       <VStack spacing={5}>
         <Grid
           w="100%"
-          h="500px"
+          h={{ base: 'auto', md: '500px' }}
           border="1px solid #e2e8f0"
           borderRadius="lg"
           boxShadow="md"
@@ -44,28 +43,28 @@ const MapComponent = () => {
         >
           <GridItem
             p={6}
-            display={'flex'}
-            flexDirection={'column'}
-            alignItems={'center'}
-            justifyContent={'center'}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
             gap={12}
           >
-            <Flex flexDirection={'column'} alignItems={'center'}>
-              <Heading as="h1" fontSize={'2xl'}>
+            <Flex flexDirection="column" alignItems="center">
+              <Heading as="h1" fontSize="2xl">
                 Nous trouver
               </Heading>
-              <Text>LAO MARKET</Text>
+              <Text fontWeight="bold">LAO MARKET</Text>
               <Text>9 Bd Louis Blanc</Text>
               <Text>69400 Villefranche-sur-Saône</Text>
             </Flex>
-            <Flex flexDirection={'column'} alignItems={'center'}>
-              <Heading as="h1" fontSize={'2xl'}>
+            <Flex flexDirection="column" alignItems="center">
+              <Heading as="h1" fontSize="2xl">
                 Nous joindre
               </Heading>
               <Text>09 83 97 95 80</Text>
             </Flex>
-            <Flex flexDirection={'column'} alignItems={'center'}>
-              <Heading as="h1" fontSize={'2xl'}>
+            <Flex flexDirection="column" alignItems="center">
+              <Heading as="h1" fontSize="2xl">
                 Nous Suivre
               </Heading>
               <HStack spacing={4}>
@@ -80,10 +79,12 @@ const MapComponent = () => {
           </GridItem>
           <GridItem
             p={12}
-            display={'flex'}
-            flexDirection={'column'}
+            display="flex"
+            flexDirection="column"
             gap={4}
-            alignItems={'center'}
+            alignItems="center"
+            justifyContent="center"
+            minH={'500px'}
           >
             <MapContainer
               center={position}
@@ -98,8 +99,13 @@ const MapComponent = () => {
                 <Popup>Lao Market</Popup>
               </Marker>
             </MapContainer>
-            <Link href={googleMapsLink} isExternal color="blue.500">
-              <Button bg={'blue.400'} color={'white'}>
+            <Link href={googleMapsLink} isExternal>
+              <Button
+                bg="blue.400"
+                color="white"
+                _hover={{ bg: 'blue.500' }}
+                _focus={{ boxShadow: 'outline' }}
+              >
                 View on Google Maps
               </Button>
             </Link>

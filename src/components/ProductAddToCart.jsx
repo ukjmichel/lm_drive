@@ -15,10 +15,17 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  HStack,
+  Box,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { addItemToOrder } from '../api/apiClient';
 import { useAuth } from '../hook/AuthContext';
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-GB').format(date);
+};
 
 const ProductAddToCart = ({
   product_id,
@@ -27,12 +34,15 @@ const ProductAddToCart = ({
   price,
   orderId,
   image,
+  stock,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const priceValue = parseFloat(price); // Convert to float
   const formattedPrice = !isNaN(priceValue) ? priceValue.toFixed(2) : '0.00'; // Format price
   const { auth } = useAuth();
+  const { quantity_in_stock, expiration_date } =
+    stock.find((item) => item.store === 'CRE71780') || {};
 
   const handleAddToCart = async () => {
     if (auth) {
@@ -54,8 +64,21 @@ const ProductAddToCart = ({
         <Stack mt="6" spacing="3">
           <Heading size="md">{product_name}</Heading>
           <Text>{brand}</Text>
+          <HStack spacing="6" w="100%">
+            <Box flex="1">
+              <Text>{`DLC: ${
+                expiration_date ? formatDate(expiration_date) : ''
+              }`}</Text>
+            </Box>
+            <Box flex="1">
+              <Text>{`Stock: ${
+                quantity_in_stock ? quantity_in_stock : 0
+              }`}</Text>
+            </Box>
+          </HStack>
+
           <Text color="blue.600" fontSize="2xl">
-            {auth ? formattedPrice : ''}
+            {auth ? `${formattedPrice} euros` : ''}
           </Text>
         </Stack>
       </CardBody>

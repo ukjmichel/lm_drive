@@ -7,17 +7,23 @@ import view3 from '../assets/images/lm_s.jpg';
 
 function SimpleSlider() {
   const settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
   };
   return (
-    <Box w={'100%'} className="slider-container">
+    <Box
+      className="slider-container"
+      overflow={'hidden'}
+      height={'300px'}
+      width={{ base: '100%', md: '400px', lg: '500px', xl: '700px' }}
+      borderRadius={'xl'}
+    >
       <Slider {...settings}>
         <Box>
-          <Img src={view}></Img>
+          <Img src={view} objectFit={'cover'}></Img>
         </Box>
         <Box>
           <Img src={view2}></Img>

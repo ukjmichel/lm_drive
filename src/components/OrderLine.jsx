@@ -54,10 +54,9 @@ const OrderLine = ({ product, quantity, id, order_id, onDelete }) => {
           <NumberDecrementStepper />
         </NumberInputStepper>
       </NumberInput>
-      <Box>Prix</Box>
-      <Box>{price}</Box>
-      <Box>Total</Box>
-      <Box>{(currentQuantity * price).toFixed(2)}</Box>
+      <Box w={'150px'}>{`Prix ttc: ${price} Euros`}</Box>
+      {/* <Box fontWeight={'800'}>Total:</Box>
+      <Box w={'60px'}>{(currentQuantity * price).toFixed(2)}</Box> */}
 
       {/* Delete Button */}
       <IconButton

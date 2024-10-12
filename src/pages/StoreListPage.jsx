@@ -5,7 +5,7 @@ import {
   fetchAllProducts,
   getCustomerOrders,
 } from '../api/apiClient';
-import { Flex, Fade } from '@chakra-ui/react';
+import { Flex, Fade, Grid, GridItem } from '@chakra-ui/react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../hook/AuthContext';
 
@@ -22,26 +22,27 @@ const StoreListPage = () => {
       const filteredProductsList = response.filter(
         (product) => product.category.name === id
       );
+      console.log(filteredProductsList);
       setProducts(filteredProductsList);
     } catch (error) {
       console.log('Error:', error);
     }
   };
 
-  // const getOrderId = async () => {
-  //   try {
-  //     const response = await getCustomerOrders();
-  //     const pendingOrder = response.filter(
-  //       (order) => order.status === 'pending'
-  //     );
-  //     if (pendingOrder.length === 0) {
-  //       pendingOrder = await createCustomerOrder();
-  //     }
-  //     setOrderId(pendingOrder[0].order_id);
-  //   } catch (error) {
-  //     console.log('Error:', error);
-  //   }
-  // };
+  const getOrderId = async () => {
+    try {
+      const response = await getCustomerOrders();
+      const pendingOrder = response.filter(
+        (order) => order.status === 'pending'
+      );
+      if (pendingOrder.length === 0) {
+        pendingOrder = await createCustomerOrder();
+      }
+      setOrderId(pendingOrder[0].order_id);
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
 
   useEffect(() => {
     getProduct();
@@ -53,18 +54,33 @@ const StoreListPage = () => {
 
   return (
     <BaseLayout>
-      <Flex gap={4} wrap="wrap" minHeight="500px">
+      <Grid
+        gap={4}
+        wrap="wrap"
+        minHeight="500px"
+        templateColumns={{
+          base: '1fr',
+          md: '1fr 1fr',
+          lg: '1fr 1fr 1fr',
+          xl: '1fr 1fr 1fr 1fr',
+        }}
+      >
         {products.map((product, index) => (
           // Wrap each ProductAddToCart component in a Fade with a staggered delay
-          <Fade
-            in
+          <GridItem
+            display={'grid'}
+            justifyContent={'center'}
             key={product.product_id}
-            transition={{ enter: { duration: 0.4, delay: index * 0.1 } }} // Dynamic delay for each product
           >
-            <ProductAddToCart orderId={orderId} {...product} auth={auth} />
-          </Fade>
+            <Fade
+              in
+              transition={{ enter: { duration: 0.4, delay: index * 0.1 } }} // Dynamic delay for each product
+            >
+              <ProductAddToCart orderId={orderId} {...product} auth={auth} />
+            </Fade>
+          </GridItem>
         ))}
-      </Flex>
+      </Grid>
     </BaseLayout>
   );
 };

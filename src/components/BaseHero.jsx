@@ -77,7 +77,7 @@ const BaseHero = () => {
             </Button>
           </Stack>
         </Stack>
-        <Flex
+        <Stack
           flex={1}
           justify={'center'}
           align={'center'}
@@ -93,18 +93,8 @@ const BaseHero = () => {
             zIndex={-1}
             color={'rgba(66, 153, 225, 0.2)'}
           />
-          <Box
-            position={'relative'}
-            height={'300px'}
-            rounded={'2xl'}
-            boxShadow={'2xl'}
-            width={'50%'}
-            overflow={'hidden'}
-            mr={124}
-          >
-            <SimpleSlider />
-          </Box>
-        </Flex>
+          <SimpleSlider />
+        </Stack>
       </Stack>
     </Container>
   );

@@ -5,11 +5,13 @@ import { useEffect } from 'react';
 
 const SignInPage = () => {
   const navigate = useNavigate();
-  const { auth, login } = useAuth(); // Use isLoggedIn instead of auth
-  
+  const { auth, login, isAdmin } = useAuth(); // Use isLoggedIn instead of auth
+
   useEffect(() => {
-    if (auth) {
+    if (auth && !isAdmin) {
       navigate('/store');
+    } else if (auth && isAdmin) {
+      navigate('/admin/orders');
     }
   }, [auth]);
   return (

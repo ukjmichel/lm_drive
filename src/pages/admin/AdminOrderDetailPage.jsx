@@ -15,7 +15,7 @@ const OrdersListPage = () => {
     const fetchOrders = async () => {
       try {
         const response = await getCustomerOrder(orderId);
-        console.log(response.items);
+
         setOrder(response); // Set specific order if found
         setOrderItems(response.items);
         setCheckedItems(new Array(response.items.length).fill(false)); // Initialize checkbox state

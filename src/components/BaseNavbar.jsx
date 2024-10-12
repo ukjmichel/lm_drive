@@ -120,7 +120,9 @@ const DesktopNav = () => {
     <Stack direction={'row'} spacing={4}>
       {NAV_ITEMS.map((navItem) => (
         <NavLink key={navItem.label} to={navItem.url}>
-          <Box key={navItem.label} _hover={{color:'blue.400'}}>{navItem.label}</Box>
+          <Box key={navItem.label} _hover={{ color: 'blue.400' }}>
+            {navItem.label}
+          </Box>
         </NavLink>
       ))}
     </Stack>
@@ -242,10 +244,6 @@ const NAV_ITEMS = [
   {
     label: 'Store',
     url: '/store',
-  },
-  {
-    label: 'Historique',
-    url: '/',
   },
 ];
 

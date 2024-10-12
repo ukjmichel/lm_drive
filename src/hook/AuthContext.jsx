@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { createContext, useState, useEffect, useContext } from 'react';
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode from jwt-decode
+import { getToken } from '../api/apiClient';
 
 const AuthContext = createContext();
 
@@ -10,10 +11,8 @@ const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post(import.meta.env.VITE_API_TOKEN_URL, {
-        username,
-        password,
-      });
+      const response = await getToken(username, password);
+      console.log(response);
 
       if (response.status === 200) {
         const accessToken = response.data.access;
