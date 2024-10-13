@@ -15,6 +15,7 @@ import { AdminOrdersListPage, AdminOrderDetailPage } from './pages/admin';
 import 'leaflet/dist/leaflet.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import CheckoutPage from './pages/CheckoutPage';
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/store" element={<StorePage />} />
               <Route path="/cart" element={<OrderDetailPage />} />
-              <Route path="/test" element={<TestPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/admin/orders" element={<AdminOrdersListPage />} />
               <Route
                 path="/admin/orders/:orderId"

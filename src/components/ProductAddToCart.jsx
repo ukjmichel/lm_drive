@@ -37,12 +37,18 @@ const ProductAddToCart = ({
   stock,
 }) => {
   const [quantity, setQuantity] = useState(1);
+
   const navigate = useNavigate();
   const priceValue = parseFloat(price); // Convert to float
   const formattedPrice = !isNaN(priceValue) ? priceValue.toFixed(2) : '0.00'; // Format price
   const { auth } = useAuth();
-  const { quantity_in_stock, expiration_date } =
-    stock.find((item) => item.store === 'CRE71780') || {};
+  let quantity_in_stock = 0;
+  let expiration_date = null;
+  if (auth) {
+    stock = stock.find((item) => item.store === 'CRE71780') || {};
+    quantity_in_stock = stock.quantity || 0;
+    expiration_date = stock.expiration_date || null;
+  }
 
   const handleAddToCart = async () => {
     if (auth) {

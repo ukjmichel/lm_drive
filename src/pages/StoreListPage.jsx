@@ -22,7 +22,6 @@ const StoreListPage = () => {
       const filteredProductsList = response.filter(
         (product) => product.category.name === id
       );
-      console.log(filteredProductsList);
       setProducts(filteredProductsList);
     } catch (error) {
       console.log('Error:', error);
@@ -32,9 +31,7 @@ const StoreListPage = () => {
   const getOrderId = async () => {
     try {
       const response = await getCustomerOrders();
-      const pendingOrder = response.filter(
-        (order) => order.status === 'pending'
-      );
+      let pendingOrder = response.filter((order) => order.status === 'pending');
       if (pendingOrder.length === 0) {
         pendingOrder = await createCustomerOrder();
       }

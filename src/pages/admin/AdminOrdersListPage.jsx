@@ -41,7 +41,7 @@ const AdminOrdersListPage = () => {
           <Box width="100px" textAlign="Center">
             <Text>n° cmd</Text>
           </Box>
-          <Box width="100px"  textAlign="Center">
+          <Box width="100px" textAlign="Center">
             <Text>status</Text>
           </Box>
         </Flex>
@@ -54,6 +54,7 @@ const AdminOrdersListPage = () => {
                 borderColor="gray.200"
                 py={2}
                 my={2}
+                key={order_id}
               >
                 <Box width="100px" textAlign="Center">
                   <NavLink to={order_id}>
@@ -62,7 +63,7 @@ const AdminOrdersListPage = () => {
                     </Text>
                   </NavLink>
                 </Box>
-                <Box width="100px"  textAlign="Center">
+                <Box width="100px" textAlign="Center">
                   <Text>{status}</Text>
                 </Box>
               </Flex>
