@@ -12,17 +12,20 @@ import {
   Text,
   Divider,
 } from '@chakra-ui/react';
-import { getCustomerOrder, getCustomerOrders } from '../api/apiClient';
+import {
+  getCustomerOrder,
+  getCustomerOrders,
+  processPayment,
+} from '../api/apiClient';
 
 const CheckoutForm = () => {
   const [loading, setLoading] = useState(false);
+  const [order, setOrder] = useState({});
+  const { order_id, items = [], total_amount } = order;
 
   const stripe = useStripe();
   const elements = useElements();
   const toast = useToast();
-
-  const [order, setOrder] = useState({});
-  const { order_id, items = [], total_amount } = order;
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -39,14 +42,28 @@ const CheckoutForm = () => {
           setOrder(pendingOrderDetail);
         } else {
           console.error('No pending orders found.');
+          toast({
+            title: 'No Pending Orders',
+            description: 'You have no pending orders.',
+            status: 'info',
+            duration: 5000,
+            isClosable: true,
+          });
         }
       } catch (error) {
         console.error('Error fetching order:', error);
+        toast({
+          title: 'Error Fetching Order',
+          description: error.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
       }
     };
 
     fetchOrder();
-  }, []);
+  }, [toast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,6 +83,7 @@ const CheckoutForm = () => {
 
     const cardElement = elements.getElement(CardElement);
 
+    // Create a payment method with Stripe
     const { error, paymentMethod } = await stripe.createPaymentMethod({
       type: 'card',
       card: cardElement,
@@ -80,15 +98,55 @@ const CheckoutForm = () => {
         isClosable: true,
       });
       setLoading(false);
-    } else {
+      return;
+    }
+
+    // Send payment details to your API, including the order number
+    try {
+      const response = await processPayment({
+        order_id: order_id,
+        payment_method_id: paymentMethod.id,
+        amount: total_amount * 100, // Ensure amount is in cents
+        currency: 'eur',
+      });
+
+      // Directly use response since it's already parsed in your processPayment function
+      if (response.status === 'success') {
+        const paymentIntent = response.payment_intent;
+        const paymentDetails = response.payment;
+
+        toast({
+          title: 'Payment Successful',
+          description: `Payment processed successfully. Order ID: ${order_id}.`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+
+        // Optionally, log these details for further processing
+        //console.log('Payment Details:', paymentDetails);
+        //console.log('Payment Intent:', paymentIntent);
+      } else {
+        // Handle error based on response structure
+        const errorMessage = response.data?.error || response.statusText;
+        toast({
+          title: 'Payment Failed',
+          description: errorMessage,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (apiError) {
+      console.error('API error:', apiError);
       toast({
-        title: 'Payment Successful',
-        description: `Payment method created with ID: ${paymentMethod.id}`,
-        status: 'success',
+        title: 'API Error',
+        description: apiError.message,
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
-
+    } finally {
       setLoading(false);
     }
   };
@@ -112,8 +170,8 @@ const CheckoutForm = () => {
         </Heading>
         <Text fontSize="lg" fontWeight="bold" mb={2}>
           Commande n°:{' '}
-          <Text as="span" color="teal.600" textTransform={'uppercase'}>
-            {order_id ? order_id : 'Loading...'}
+          <Text as="span" color="teal.600" textTransform="uppercase">
+            {order_id || 'Loading...'}
           </Text>
         </Text>
 

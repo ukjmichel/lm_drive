@@ -7,7 +7,7 @@ let refreshSubscribers = []; // Queue for requests while the token is refreshing
 // Create an Axios instance
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL, // Ensure this ends with '/'
-  timeout: 1000,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -301,5 +301,44 @@ export const getOrdersPendings = async () => {
   } catch (error) {
     console.error('Error fetching user orders:', error);
     return { error: 'Failed to fetch user orders' }; // Return error message
+  }
+};
+
+export const processPayment = async (paymentData) => {
+  try {
+    const response = await apiClient.post('api/payments/process/', paymentData);
+
+    // Check if response is defined and successful
+    if (response && response.status === 201) {
+      return response.data; // Return the response data if needed
+    } else {
+      throw new Error(
+        response?.data?.error ||
+          response.statusText ||
+          'Payment processing failed.'
+      );
+    }
+  } catch (error) {
+    // Log the entire error object for debugging
+    console.error('Payment processing error:', error);
+
+    // Handle the error more gracefully
+    let errorMessage;
+
+    if (error.response) {
+      // Check if response data is structured
+      errorMessage =
+        error.response.data?.error ||
+        'Payment processing failed. Please try again.';
+    } else if (error.request) {
+      // The request was made but no response was received
+      errorMessage = 'No response received from the server. Please try again.';
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      errorMessage =
+        error.message || 'Payment processing failed. Please try again.';
+    }
+
+    throw new Error(errorMessage);
   }
 };
