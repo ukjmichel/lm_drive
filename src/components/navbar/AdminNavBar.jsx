@@ -1,4 +1,3 @@
-// ConnectedNavbar.jsx
 import {
   Box,
   Flex,
@@ -8,9 +7,6 @@ import {
   Stack,
   Collapse,
   Icon,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
   useColorModeValue,
   useBreakpointValue,
   useDisclosure,
@@ -23,11 +19,12 @@ import {
   ChevronRightIcon,
 } from '@chakra-ui/icons';
 
-import { IoIosBasket } from 'react-icons/io';
-import { useAuth } from '../hook/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hook/AuthContext';
+import PropTypes from 'prop-types';
 
-const ConnectedNavbar = () => {
+// AdminNavbar component
+const AdminNavbar = () => {
   const { isOpen, onToggle } = useDisclosure();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -96,25 +93,14 @@ const ConnectedNavbar = () => {
           <Button
             fontSize={'sm'}
             fontWeight={400}
-            variant={'link'}
+            bg={'blue.400'}
+            color={'white'}
+            _hover={{ bg: 'blue.300' }}
             onClick={() => handleLogout()}
+            aria-label="Log out"
           >
             Se déconnecter
           </Button>
-          <NavLink to="/cart">
-            <Button
-              display={'inline-flex'}
-              fontSize={'2xl'}
-              fontWeight={600}
-              color={'white'}
-              bg={'blue.400'}
-              _hover={{
-                bg: 'blue.300',
-              }}
-            >
-              <Icon as={IoIosBasket} p={0} />
-            </Button>
-          </NavLink>
         </Stack>
       </Flex>
 
@@ -125,22 +111,26 @@ const ConnectedNavbar = () => {
   );
 };
 
+// Desktop navigation items (links)
 const DesktopNav = () => {
-  const linkColor = useColorModeValue('gray.600', 'gray.200');
-  const linkHoverColor = useColorModeValue('gray.800', 'white');
-  const popoverContentBgColor = useColorModeValue('white', 'gray.800');
-
   return (
     <Stack direction={'row'} spacing={4}>
       {NAV_ITEMS.map((navItem) => (
-        <NavLink key={navItem.label} to={navItem.url}>
-          <Box key={navItem.label}>{navItem.label}</Box>
+        <NavLink
+          key={navItem.label}
+          to={navItem.url}
+          style={({ isActive }) => ({
+            color: isActive ? 'blue.400' : 'inherit', // Highlight active link
+          })}
+        >
+          <Box>{navItem.label}</Box>
         </NavLink>
       ))}
     </Stack>
   );
 };
 
+// Sub-navigation for desktop view
 const DesktopSubNav = ({ label, href, subLabel }) => {
   return (
     <Box
@@ -180,6 +170,7 @@ const DesktopSubNav = ({ label, href, subLabel }) => {
   );
 };
 
+// Mobile navigation items (links)
 const MobileNav = () => {
   return (
     <Stack
@@ -194,6 +185,7 @@ const MobileNav = () => {
   );
 };
 
+// Mobile navigation item with collapsible sub-items
 const MobileNavItem = ({ label, children, href }) => {
   const { isOpen, onToggle } = useDisclosure();
 
@@ -248,19 +240,42 @@ const MobileNavItem = ({ label, children, href }) => {
   );
 };
 
+// Navigation items for the desktop and mobile views
 const NAV_ITEMS = [
   {
     label: 'Acceuil',
     url: '/',
   },
   {
-    label: 'Store',
-    url: '/store',
-  },
-  {
-    label: 'Historique',
-    url: '/',
+    label: 'Commande',
+    url: '/admin/orders/',
   },
 ];
 
-export default ConnectedNavbar;
+// Prop validation for DesktopSubNav
+DesktopSubNav.propTypes = {
+  label: PropTypes.string.isRequired, // For the label of the sub-nav item
+  href: PropTypes.string.isRequired, // For the URL of the sub-nav item
+  subLabel: PropTypes.string.isRequired, // For the sub-label text
+};
+
+// Prop validation for MobileNavItem
+MobileNavItem.propTypes = {
+  label: PropTypes.string.isRequired, // For the label of the nav item
+  href: PropTypes.string, // For the URL of the nav item
+  children: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired, // For the label of the sub-nav item
+      href: PropTypes.string.isRequired, // For the URL of the sub-nav item
+    })
+  ), // Array of sub-nav items
+};
+
+// Prop validation for AdminNavbar (optional)
+AdminNavbar.propTypes = {
+  // If any props are expected in AdminNavbar, define them here
+  // For example:
+  // user: PropTypes.object.isRequired,
+};
+
+export default AdminNavbar;

@@ -306,39 +306,118 @@ export const getOrdersPendings = async () => {
 
 export const processPayment = async (paymentData) => {
   try {
-    const response = await apiClient.post('api/payments/process/', paymentData);
+    // Log the payment data being sent for debugging purposes
+    console.log('Sending payment data:', paymentData);
 
-    // Check if response is defined and successful
-    if (response && response.status === 201) {
-      return response.data; // Return the response data if needed
+    // Make the API request to process the payment
+    const response = await apiClient.post(
+      `http://localhost:8000/api/payments/create-payment-intent/${paymentData.order_id}/`, // Adjusted endpoint to include order_id
+      paymentData
+    );
+
+    // Log the response data for debugging purposes
+    console.log('Payment response:', response);
+
+    // Ensure the response status is 200 OK and the client_secret is available
+    if (response?.status === 200 && response.data?.client_secret) {
+      const { client_secret, requires_action } = response.data;
+
+      // If 3D Secure authentication is required, return client_secret for further steps
+      if (requires_action) {
+        return {
+          requiresAction: true,
+          clientSecret: client_secret, // Return client_secret for further steps
+        };
+      } else {
+        // No further authentication needed (non-3D Secure card), confirm payment
+        return {
+          requiresAction: false,
+          clientSecret: client_secret, // You still need client_secret for confirmation
+        };
+      }
     } else {
+      // If no client_secret is provided or response status is not 200, throw an error
       throw new Error(
-        response?.data?.error ||
-          response.statusText ||
-          'Payment processing failed.'
+        'Payment processing failed. No client_secret provided or invalid response.'
       );
     }
   } catch (error) {
-    // Log the entire error object for debugging
     console.error('Payment processing error:', error);
 
-    // Handle the error more gracefully
     let errorMessage;
 
+    // Handle errors from the response if available
     if (error.response) {
-      // Check if response data is structured
+      // If the server responded with an error (e.g., 400, 500)
+      console.error('Server error details:', error.response.data);
       errorMessage =
         error.response.data?.error ||
         'Payment processing failed. Please try again.';
     } else if (error.request) {
-      // The request was made but no response was received
-      errorMessage = 'No response received from the server. Please try again.';
+      // If no response was received from the server (e.g., network issue)
+      console.error('Network error, no response:', error.request);
+      errorMessage =
+        'No response received from the server. Please check your network connection and try again.';
     } else {
-      // Something happened in setting up the request that triggered an Error
+      // If the error occurred during the setup or in another part of the request
       errorMessage =
         error.message || 'Payment processing failed. Please try again.';
     }
 
+    // Log the error message and throw it
+    console.error('Error message:', errorMessage);
     throw new Error(errorMessage);
+  }
+};
+
+
+export const getSubcategories = async () => {
+  try {
+    const response = await apiClient.get('api/store/subcategories/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    return { error: 'Failed to fetch subcategories' }; // Return error message
+  }
+};
+
+export const getBrands = async () => {
+  try {
+    const response = await apiClient.get('api/store/brands/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching brands:', error);
+    return { error: 'Failed to fetch brands' }; // Return error message
+  }
+};
+
+export const getFilteredProducts = async ({
+  categorie = '',
+  subcategories = '',
+  brand = '',
+}) => {
+  const url = `api/store/products/?category=${categorie}${
+    subcategories ? `&subcategories=${subcategories}` : ''
+  }${brand ? `&brand=${brand}` : ''}`;
+  try {
+    const response = await apiClient.get(url);
+
+    return response.data; // Return the data if successful
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return { error: 'Failed to fetch products' }; // Return error message
+  }
+};
+
+export const getProductsStocks = async ({ store = '', product = '' }) => {
+  const url = `api/store/${store}/stocks/${product}/ `;
+  console.log(url);
+  try {
+    const response = await apiClient.get(url);
+
+    return response.data; // Return the data if successful
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return { error: 'Failed to fetch products' }; // Return error message
   }
 };

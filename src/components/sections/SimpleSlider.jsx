@@ -1,9 +1,8 @@
 import { Box, Img } from '@chakra-ui/react';
-import React from 'react';
 import Slider from 'react-slick';
-import view from '../assets/images/lm_b.jpg';
-import view2 from '../assets/images/lm_e.jpg';
-import view3 from '../assets/images/lm_s.jpg';
+import view from '../..//assets/images/lm_b.jpg';
+import view2 from '../../assets/images/lm_e.jpg';
+import view3 from '../../assets/images/lm_s.jpg';
 
 function SimpleSlider() {
   const settings = {

@@ -1,6 +1,7 @@
 import axios from 'axios';
+import PropTypes from 'prop-types'; // Import PropTypes
 import { createContext, useState, useEffect, useContext } from 'react';
-import { jwtDecode } from 'jwt-decode'; // Import jwtDecode from jwt-decode
+import { jwtDecode } from 'jwt-decode'; // Corrected import
 import { getToken } from '../api/apiClient';
 
 const AuthContext = createContext();
@@ -49,15 +50,14 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const decodeToken = (token) => {
-    try {
-      const decoded = jwtDecode(token);
-      return decoded;
-    } catch (error) {
-      console.error('Invalid token:', error);
-      return null;
-    }
-  };
+  // const decodeToken = (token) => {
+  //   try {
+  //     return jwtDecode(token);
+  //   } catch (error) {
+  //     console.error('Invalid token:', error);
+  //     return null;
+  //   }
+  // };
 
   const refreshAccessToken = async (refreshToken) => {
     try {
@@ -67,6 +67,7 @@ const AuthProvider = ({ children }) => {
 
       if (response.status === 200) {
         const newAccessToken = response.data.access;
+        localStorage.setItem('access', newAccessToken); // Save the new access token
         return newAccessToken;
       }
     } catch (error) {
@@ -87,24 +88,14 @@ const AuthProvider = ({ children }) => {
           const currentTime = Date.now() / 1000;
           if (decodedToken.exp > currentTime) {
             setAuth(true);
-
-            if (decodedToken.is_admin) {
-              setIsAdmin(true);
-            } else {
-              setIsAdmin(false);
-            }
+            setIsAdmin(decodedToken.is_admin || false);
           } else if (storedRefreshToken) {
             const newAccessToken = await refreshAccessToken(storedRefreshToken);
             if (newAccessToken) {
-              localStorage.setItem('access', newAccessToken);
               const decodedNewToken = jwtDecode(newAccessToken);
 
               setAuth(true);
-              if (decodedNewToken.is_admin) {
-                setIsAdmin(true);
-              } else {
-                setIsAdmin(false);
-              }
+              setIsAdmin(decodedNewToken.is_admin || false);
             } else {
               setAuth(false);
             }
@@ -128,6 +119,11 @@ const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+// Add PropTypes validation
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export { AuthProvider, AuthContext };

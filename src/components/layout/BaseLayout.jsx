@@ -1,9 +1,10 @@
-import { useAuth } from '../hook/AuthContext';
-import BaseFooter from './BaseFooter';
-import BaseNavbar from './BaseNavbar';
+import PropTypes from 'prop-types'; // Import PropTypes
+import { useAuth } from '../../hook/AuthContext';
+import BaseFooter from '../sections/BaseFooter';
+import BaseNavbar from '../navbar/BaseNavbar';
 import { Box } from '@chakra-ui/react';
-import ConnectedNavbar from './ConnectedNavbar';
-import AdminNavbar from './AdminNavBar';
+import ConnectedNavbar from '../sections/ConnectedNavbar';
+import AdminNavbar from '../navbar/AdminNavBar';
 
 const BaseLayout = ({ children }) => {
   const { auth, isAdmin } = useAuth();
@@ -25,4 +26,10 @@ const BaseLayout = ({ children }) => {
     </Box>
   );
 };
+
+// Define prop types for the component
+BaseLayout.propTypes = {
+  children: PropTypes.node.isRequired, // Ensure children is a valid React node and is required
+};
+
 export default BaseLayout;

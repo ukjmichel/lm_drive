@@ -7,9 +7,6 @@ import {
   Stack,
   Collapse,
   Icon,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
   useColorModeValue,
   useBreakpointValue,
   useDisclosure,
@@ -21,6 +18,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
 } from '@chakra-ui/icons';
+import PropTypes from 'prop-types'; // Import PropTypes
 import { NavLink } from 'react-router-dom';
 
 const BaseNavbar = () => {
@@ -94,11 +92,9 @@ const BaseNavbar = () => {
               fontWeight={600}
               color={'white'}
               bg={'blue.400'}
-              _hover={{
-                bg: 'blue.300',
-              }}
+              _hover={{ bg: 'blue.300' }}
             >
-              S'inscrire
+              S&apos;inscrire
             </Button>
           </NavLink>
         </Stack>
@@ -112,17 +108,11 @@ const BaseNavbar = () => {
 };
 
 const DesktopNav = () => {
-  const linkColor = useColorModeValue('gray.600', 'gray.200');
-  const linkHoverColor = useColorModeValue('gray.800', 'white');
-  const popoverContentBgColor = useColorModeValue('white', 'gray.800');
-
   return (
     <Stack direction={'row'} spacing={4}>
       {NAV_ITEMS.map((navItem) => (
         <NavLink key={navItem.label} to={navItem.url}>
-          <Box key={navItem.label} _hover={{ color: 'blue.400' }}>
-            {navItem.label}
-          </Box>
+          <Box _hover={{ color: 'blue.400' }}>{navItem.label}</Box>
         </NavLink>
       ))}
     </Stack>
@@ -144,14 +134,13 @@ const DesktopSubNav = ({ label, href, subLabel }) => {
         <Box>
           <Text
             transition={'all .3s ease'}
-            _groupHover={{ color: 'pink.400 ' }}
+            _groupHover={{ color: 'pink.400' }}
             fontWeight={500}
           >
             {label}
           </Text>
           <Text fontSize={'sm'}>{subLabel}</Text>
         </Box>
-
         <Flex
           transition={'all .3s ease'}
           transform={'translateX(-10px)'}
@@ -166,6 +155,12 @@ const DesktopSubNav = ({ label, href, subLabel }) => {
       </Stack>
     </Box>
   );
+};
+
+DesktopSubNav.propTypes = {
+  label: PropTypes.string.isRequired,
+  href: PropTypes.string,
+  subLabel: PropTypes.string,
 };
 
 const MobileNav = () => {
@@ -193,9 +188,7 @@ const MobileNavItem = ({ label, children, href }) => {
         href={href ?? '#'}
         justifyContent="space-between"
         alignItems="center"
-        _hover={{
-          textDecoration: 'none',
-        }}
+        _hover={{ textDecoration: 'none' }}
       >
         <Text
           fontWeight={600}
@@ -203,7 +196,6 @@ const MobileNavItem = ({ label, children, href }) => {
         >
           {label}
         </Text>
-
         {children && (
           <Icon
             as={ChevronDownIcon}
@@ -214,7 +206,6 @@ const MobileNavItem = ({ label, children, href }) => {
           />
         )}
       </Box>
-
       <Collapse in={isOpen} animateOpacity style={{ marginTop: '0!important' }}>
         <Stack
           mt={2}
@@ -236,9 +227,20 @@ const MobileNavItem = ({ label, children, href }) => {
   );
 };
 
+MobileNavItem.propTypes = {
+  label: PropTypes.string.isRequired,
+  children: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string,
+      href: PropTypes.string,
+    })
+  ),
+  href: PropTypes.string,
+};
+
 const NAV_ITEMS = [
   {
-    label: 'Acceuil',
+    label: 'Accueil',
     url: '/',
   },
   {

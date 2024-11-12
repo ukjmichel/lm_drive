@@ -1,4 +1,3 @@
-import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import {
   Box,
@@ -15,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import L from 'leaflet';
 import { FaInstagram, FaFacebook } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 // Set up the marker icon (default leaflet marker icon setup)
 const icon = L.icon({
@@ -77,6 +77,7 @@ const MapComponent = () => {
               </HStack>
             </Flex>
           </GridItem>
+
           <GridItem
             p={12}
             display="flex"
@@ -86,29 +87,45 @@ const MapComponent = () => {
             justifyContent="center"
             minH={'500px'}
           >
-            <MapContainer
-              center={position}
-              zoom={13}
-              style={{ height: '100%', width: '100%' }}
+            {/* Wrap only the MapContainer with motion.div */}
+            <motion.div
+              initial={{ opacity: 0, y: 100 }} // Start from the bottom with opacity 0
+              animate={{ opacity: 1, y: 0 }} // Animate to the original position with full opacity
+              transition={{ duration: 1 }} // 1 second transition duration
+              style={{ width: '100%', height: '100%' }} // Ensure the motion container takes up the full size
             >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              <Marker position={position} icon={icon}>
-                <Popup>Lao Market</Popup>
-              </Marker>
-            </MapContainer>
-            <Link href={googleMapsLink} isExternal>
-              <Button
-                bg="blue.400"
-                color="white"
-                _hover={{ bg: 'blue.500' }}
-                _focus={{ boxShadow: 'outline' }}
+              <MapContainer
+                center={position}
+                zoom={13}
+                style={{ height: '100%', width: '100%' }} // Set the size of the map
               >
-                View on Google Maps
-              </Button>
-            </Link>
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <Marker position={position} icon={icon}>
+                  <Popup>Lao Market</Popup>
+                </Marker>
+              </MapContainer>
+            </motion.div>
+
+            {/* Delay the appearance of the Button */}
+            <motion.div
+              initial={{ opacity: 0 }} // Start with opacity 0
+              animate={{ opacity: 1 }} // Fade in
+              transition={{ duration: 1, delay: 1 }} // Start the fade-in after the map animation completes
+            >
+              <Link href={googleMapsLink} isExternal>
+                <Button
+                  bg="blue.400"
+                  color="white"
+                  _hover={{ bg: 'blue.500' }}
+                  _focus={{ boxShadow: 'outline' }}
+                >
+                  View on Google Maps
+                </Button>
+              </Link>
+            </motion.div>
           </GridItem>
         </Grid>
       </VStack>

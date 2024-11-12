@@ -8,9 +8,6 @@ import {
   Stack,
   Collapse,
   Icon,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
   useColorModeValue,
   useBreakpointValue,
   useDisclosure,
@@ -24,10 +21,11 @@ import {
 } from '@chakra-ui/icons';
 
 import { IoIosBasket } from 'react-icons/io';
-import { useAuth } from '../hook/AuthContext';
+import { useAuth } from '../../hook/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-const AdminNavbar = () => {
+const ConnectedNavbar = () => {
   const { isOpen, onToggle } = useDisclosure();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -96,13 +94,23 @@ const AdminNavbar = () => {
           <Button
             fontSize={'sm'}
             fontWeight={400}
-            bg={'blue.400'}
-            color={'white'}
-            _hover={{ bg: 'blue.300' }}
-            onClick={() => handleLogout()}
+            variant={'link'}
+            onClick={handleLogout}
           >
             Se déconnecter
           </Button>
+          <NavLink to="/cart">
+            <Button
+              display={'inline-flex'}
+              fontSize={'2xl'}
+              fontWeight={600}
+              color={'white'}
+              bg={'blue.400'}
+              _hover={{ bg: 'blue.300' }}
+            >
+              <Icon as={IoIosBasket} p={0} />
+            </Button>
+          </NavLink>
         </Stack>
       </Flex>
 
@@ -114,15 +122,11 @@ const AdminNavbar = () => {
 };
 
 const DesktopNav = () => {
-  const linkColor = useColorModeValue('gray.600', 'gray.200');
-  const linkHoverColor = useColorModeValue('gray.800', 'white');
-  const popoverContentBgColor = useColorModeValue('white', 'gray.800');
-
   return (
     <Stack direction={'row'} spacing={4}>
       {NAV_ITEMS.map((navItem) => (
         <NavLink key={navItem.label} to={navItem.url}>
-          <Box key={navItem.label}>{navItem.label}</Box>
+          <Box>{navItem.label}</Box>
         </NavLink>
       ))}
     </Stack>
@@ -151,7 +155,6 @@ const DesktopSubNav = ({ label, href, subLabel }) => {
           </Text>
           <Text fontSize={'sm'}>{subLabel}</Text>
         </Box>
-
         <Flex
           transition={'all .3s ease'}
           transform={'translateX(-10px)'}
@@ -166,6 +169,12 @@ const DesktopSubNav = ({ label, href, subLabel }) => {
       </Stack>
     </Box>
   );
+};
+
+DesktopSubNav.propTypes = {
+  label: PropTypes.string.isRequired,
+  href: PropTypes.string,
+  subLabel: PropTypes.string,
 };
 
 const MobileNav = () => {
@@ -193,9 +202,7 @@ const MobileNavItem = ({ label, children, href }) => {
         href={href ?? '#'}
         justifyContent="space-between"
         alignItems="center"
-        _hover={{
-          textDecoration: 'none',
-        }}
+        _hover={{ textDecoration: 'none' }}
       >
         <Text
           fontWeight={600}
@@ -236,15 +243,30 @@ const MobileNavItem = ({ label, children, href }) => {
   );
 };
 
+MobileNavItem.propTypes = {
+  label: PropTypes.string.isRequired,
+  children: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      href: PropTypes.string,
+    })
+  ),
+  href: PropTypes.string,
+};
+
 const NAV_ITEMS = [
   {
     label: 'Acceuil',
     url: '/',
   },
   {
-    label: 'Commande',
-    url: '/admin/orders/',
+    label: 'Store',
+    url: '/store',
+  },
+  {
+    label: 'Historique',
+    url: '/',
   },
 ];
 
-export default AdminNavbar;
+export default ConnectedNavbar;

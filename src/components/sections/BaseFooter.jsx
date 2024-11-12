@@ -8,6 +8,7 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react';
 import { FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
+import PropTypes from 'prop-types';
 
 const SocialButton = ({ children, label, href }) => {
   return (
@@ -31,6 +32,12 @@ const SocialButton = ({ children, label, href }) => {
       {children}
     </chakra.button>
   );
+};
+
+SocialButton.propTypes = {
+  children: PropTypes.node.isRequired,
+  label: PropTypes.string.isRequired,
+  href: PropTypes.string.isRequired,
 };
 
 const BaseFooter = () => {
