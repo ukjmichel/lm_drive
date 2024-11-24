@@ -4,6 +4,8 @@ import {
   getCustomerOrders,
   getCustomerOrder,
   getProductsStocks,
+  fetchCustomerData,
+  createCustomerOrder,
 } from '../../api/apiClient';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -18,13 +20,22 @@ const OrderDetailPage = () => {
   // Fetch order details
   const fetchOrder = async () => {
     try {
-      const response = await getCustomerOrders();
-      const pendingOrder = response.filter(
-        (order) => order.status === 'pending'
-      );
+      let response = await getCustomerOrders();
+      let pendingOrder = response.filter((order) => order.status === 'pending');
+      if (pendingOrder.length === 0) {
+        const customerData = await fetchCustomerData();
+        const customerId = customerData[0].customer_id;
+        await createCustomerOrder({
+          customerId: customerId,
+          storeId: 'CRE71780',
+        });
+      }
+      response = await getCustomerOrders();
+      pendingOrder = response.filter((order) => order.status === 'pending');
       const pendingOrderDetail = await getCustomerOrder(
         pendingOrder[0].order_id
       );
+
       setOrder(pendingOrderDetail);
     } catch (error) {
       console.error('Error fetching order:', error);

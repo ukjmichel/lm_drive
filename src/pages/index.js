@@ -3,7 +3,7 @@ import StorePage from './StorePage';
 import StoreListPage from './store/StoreListPage';
 import SignInPage from './SignInPage';
 import SignUpPage from './SignUpPage';
-import TestPage from './TestPage';
+
 import OrderDetailPage from './order/OrderDetailPage';
 
 export {
@@ -11,7 +11,6 @@ export {
   SignInPage,
   SignUpPage,
   StorePage,
-  TestPage,
   OrderDetailPage,
   StoreListPage,
 };

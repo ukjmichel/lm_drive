@@ -35,7 +35,7 @@ const ProductAddToCart = ({
   brand,
   price,
   orderId,
-  image,
+  image1,
   stock_summary = {},
 }) => {
   const [quantity, setQuantity] = useState(1);
@@ -46,6 +46,7 @@ const ProductAddToCart = ({
   const priceValue = parseFloat(price);
   const formattedPrice = !isNaN(priceValue) ? priceValue.toFixed(2) : '0.00';
   const { auth } = useAuth();
+
 
   useEffect(() => {
     if (auth && stock_summary && stock_summary.stock_details) {
@@ -94,7 +95,7 @@ const ProductAddToCart = ({
   return (
     <Card maxW="sm">
       <CardBody>
-        {image && <Image src={image} alt={product_name} borderRadius="lg" />}
+        {image1 && <Image src={image1} alt={product_name} borderRadius="lg" />}
         <Stack mt="6" spacing="3">
           <Heading size="md">{product_name}</Heading>
           <Text>{brand}</Text>
@@ -149,7 +150,7 @@ ProductAddToCart.propTypes = {
   brand: PropTypes.string.isRequired,
   price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   orderId: PropTypes.string,
-  image: PropTypes.string,
+  image1: PropTypes.string,
   stock_summary: PropTypes.shape({
     stock_details: PropTypes.objectOf(
       PropTypes.shape({

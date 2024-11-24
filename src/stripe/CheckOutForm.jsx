@@ -16,6 +16,7 @@ import {
   getCustomerOrder,
   getCustomerOrders,
   processPayment,
+  updatePaymentStatus,
 } from '../api/apiClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,7 +25,6 @@ const CheckoutForm = () => {
   const [loadingPayment, setLoadingPayment] = useState(false); // Loading state for payment processing
   const [order, setOrder] = useState(null); // Store order details
   const { order_id, items = [], total_amount } = order || {}; // Destructuring order details (safe for null)
-  console.log(items);
 
   const stripe = useStripe();
   const elements = useElements();
@@ -94,27 +94,25 @@ const CheckoutForm = () => {
       return;
     }
 
-    const { error: paymentError, paymentMethod } =
-      await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
-
-    if (paymentError) {
-      showToast('Payment Error', paymentError.message, 'error');
-      setLoadingPayment(false);
-      return;
-    }
-
     try {
+      const { error: paymentError, paymentMethod } =
+        await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement,
+        });
+
+      if (paymentError) {
+        showToast('Payment Error', paymentError.message, 'error');
+        setLoadingPayment(false);
+        return;
+      }
+
       const response = await processPayment({
         order_id,
         payment_method_id: paymentMethod.id,
-        amount: total_amount * 100, // Convert amount to cents
+        amount: total_amount * 100,
         currency: 'eur',
       });
-
-      console.log('Payment Response:', response); // Log to inspect the response
 
       const { clientSecret, requiresAction } = response;
 
@@ -124,20 +122,19 @@ const CheckoutForm = () => {
           'No clientSecret found. Please try again.',
           'error'
         );
+        await updatePaymentStatus(order_id, 'failed'); // Update to failed on clientSecret error
         setLoadingPayment(false);
         return;
       }
 
       if (requiresAction) {
-        // If 3D Secure is required, handle it by calling confirmCardPayment
         const stripeResponse = await stripe.confirmCardPayment(clientSecret, {
           payment_method: paymentMethod.id,
         });
 
-        console.log('Stripe Response:', stripeResponse); // Log to inspect the response
-
         if (stripeResponse.error) {
           showToast('Payment Error', stripeResponse.error.message, 'error');
+          await updatePaymentStatus(order_id, 'failed'); // Update to failed on 3D Secure error
         } else if (stripeResponse.paymentIntent) {
           const paymentIntent = stripeResponse.paymentIntent;
 
@@ -147,27 +144,30 @@ const CheckoutForm = () => {
               `Order ID: ${order_id} has been paid.`,
               'success'
             );
-            setTimeout(() => navigate('/'), 2000); // Redirect after success
+            await updatePaymentStatus(order_id, 'succeeded');
+            setTimeout(() => navigate('/'), 2000);
           } else {
             showToast(
               'Payment Failed',
               'The payment could not be processed. Please try again.',
               'error'
             );
+            await updatePaymentStatus(order_id, 'failed'); // Update to failed on unexpected intent status
           }
         }
       } else {
-        // Payment completed without requiring 3D Secure authentication
         showToast(
           'Payment Successful',
           `Order ID: ${order_id} has been paid.`,
           'success'
         );
-        setTimeout(() => navigate('/'), 2000); // Redirect after success
+        await updatePaymentStatus(order_id, 'succeeded');
+        setTimeout(() => navigate('/'), 2000);
       }
     } catch (apiError) {
       console.error('API Error:', apiError);
       showToast('API Error', apiError.message, 'error');
+      await updatePaymentStatus(order_id, 'failed'); // Update to failed on API error
     } finally {
       setLoadingPayment(false);
     }
@@ -181,7 +181,7 @@ const CheckoutForm = () => {
 
       <form onSubmit={handleSubmit}>
         <VStack spacing={2} align="stretch">
-          {order && items.length > 0 ? (
+          {items.length > 0 ? (
             <>
               {items.map(({ product, id, quantity }) => (
                 <Box

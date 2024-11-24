@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BaseLayout } from '../../components';
 import {
   createCustomerOrder,
+  fetchCustomerData,
   getCustomerOrders,
   getFilteredProducts,
 } from '../../api/apiClient';
@@ -42,11 +43,19 @@ const StoreListPage = () => {
 
   const getOrderId = async () => {
     try {
-      const response = await getCustomerOrders();
+      let response = await getCustomerOrders();
       let pendingOrder = response.filter((order) => order.status === 'pending');
       if (pendingOrder.length === 0) {
-        pendingOrder = await createCustomerOrder();
+        const customerData = await fetchCustomerData();
+        const customerId = customerData[0].customer_id;
+        pendingOrder = await createCustomerOrder({
+          customerId: customerId,
+          storeId: 'CRE71780',
+        });
+        response = await getCustomerOrders();
+        pendingOrder = response.filter((order) => order.status === 'pending');
       }
+
       setOrderId(pendingOrder[0].order_id);
     } catch (error) {
       console.log('Error:', error);

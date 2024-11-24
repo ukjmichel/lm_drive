@@ -20,7 +20,7 @@ const subscribeTokenRefresh = (cb) => {
 
 // Function to notify all queued requests that the token has been refreshed
 const onRefreshed = (newToken) => {
-  console.log('Token refreshed, notifying subscribers');
+  //console.log('Token refreshed, notifying subscribers');
   refreshSubscribers.forEach((cb) => cb(newToken));
   refreshSubscribers = []; // Clear the queue after notifying all subscribers
 };
@@ -108,7 +108,6 @@ export const getToken = async (username, password) => {
   }
 };
 export const createAccount = async ({ username, password, email }) => {
-  console.log(username, password, email);
   try {
     const response = await apiClient.post('api/customers/', {
       user: {
@@ -172,12 +171,15 @@ export const getCustomerOrder = async (orderId) => {
 };
 
 // Create customer order
-export const createCustomerOrder = async (token, customerId) => {
+export const createCustomerOrder = async ({ customerId, storeId }) => {
+  const token = localStorage.getItem('access');
+  console.log(customerId, storeId);
   try {
     const response = await apiClient.post(
       'api/orders/',
       {
         customer_id: customerId, // The customer ID
+        store_id: storeId,
         items: [], // Empty items array for an empty order
       },
       {
@@ -188,7 +190,6 @@ export const createCustomerOrder = async (token, customerId) => {
       }
     );
 
-    console.log('Order created successfully:');
     return response.data; // Return the created order data
   } catch (error) {
     if (error.response) {
@@ -205,7 +206,6 @@ export const createCustomerOrder = async (token, customerId) => {
 export const addItemToOrder = async (orderId, product_id, quantity) => {
   const url = `${import.meta.env.VITE_API_ORDER}${orderId}/add-item/`; // Adjust the URL as needed
   const token = localStorage.getItem('access');
-  console.log(url);
 
   try {
     const response = await axios.post(
@@ -305,18 +305,19 @@ export const getOrdersPendings = async () => {
 };
 
 export const processPayment = async (paymentData) => {
+  console.log(paymentData);
   try {
     // Log the payment data being sent for debugging purposes
-    console.log('Sending payment data:', paymentData);
+    //console.log('Sending payment data:', paymentData);
 
     // Make the API request to process the payment
     const response = await apiClient.post(
-      `http://localhost:8000/api/payments/create-payment-intent/${paymentData.order_id}/`, // Adjusted endpoint to include order_id
+      `api/payments/create-payment-intent/${paymentData.order_id}/`, // Adjusted endpoint to include order_id
       paymentData
     );
 
     // Log the response data for debugging purposes
-    console.log('Payment response:', response);
+    //console.log('Payment response:', response);
 
     // Ensure the response status is 200 OK and the client_secret is available
     if (response?.status === 200 && response.data?.client_secret) {
@@ -370,7 +371,6 @@ export const processPayment = async (paymentData) => {
   }
 };
 
-
 export const getSubcategories = async () => {
   try {
     const response = await apiClient.get('api/store/subcategories/');
@@ -419,5 +419,54 @@ export const getProductsStocks = async ({ store = '', product = '' }) => {
   } catch (error) {
     console.error('Error fetching products:', error);
     return { error: 'Failed to fetch products' }; // Return error message
+  }
+};
+
+// Function to update the payment status
+export const updatePaymentStatus = async (orderId, status) => {
+  const token = localStorage.getItem('access');
+
+  if (!token) {
+    console.error('No token found in localStorage');
+    alert('You must be logged in to update payment status');
+    return;
+  }
+
+  try {
+    const response = await apiClient.post(
+      'api/payments/update-payment-status/', // Your API endpoint
+      {
+        order_id: orderId, // Order ID to update the payment status for
+        status: status, // New status ('succeeded' or 'failed')
+        store_id: 'CRE71780',
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Set the authorization token in the headers
+          'Content-Type': 'application/json', // Ensure you're sending JSON
+        },
+      }
+    );
+
+    // Handle the response from the backend
+    //console.log('Payment status updated:', response.data.message);
+    // You can also return the response if needed
+    return response.data; // Optional: return response data if you want to handle it elsewhere
+  } catch (error) {
+    // Handle any errors
+    if (error.response) {
+      console.error(
+        'Error updating payment status:',
+        error.response.data?.error || error.message
+      );
+      alert(
+        `Failed to update payment status: ${
+          error.response.data?.error || error.message
+        }`
+      );
+    } else {
+      console.error('Error updating payment status:', error.message);
+      alert(`Failed to update payment status: ${error.message}`);
+    }
   }
 };
