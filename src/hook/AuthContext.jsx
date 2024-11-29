@@ -13,7 +13,6 @@ const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const response = await getToken(username, password);
-      console.log(response);
 
       if (response.status === 200) {
         const accessToken = response.data.access;

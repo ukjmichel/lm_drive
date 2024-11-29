@@ -204,11 +204,11 @@ export const createCustomerOrder = async ({ customerId, storeId }) => {
 };
 
 export const addItemToOrder = async (orderId, product_id, quantity) => {
-  const url = `${import.meta.env.VITE_API_ORDER}${orderId}/add-item/`; // Adjust the URL as needed
+  const url = `api/orders/${orderId}/add-item/`; // Adjust the URL as needed
   const token = localStorage.getItem('access');
 
   try {
-    const response = await axios.post(
+    const response = await apiClient.post(
       url,
       {
         order_id: orderId,
@@ -234,12 +234,12 @@ export const addItemToOrder = async (orderId, product_id, quantity) => {
 };
 //Update item of an order, take as param the order_id, the id of the product in the commande and the quantity
 export const updateItemOfOrder = async (orderId, id, quantity) => {
-  const url = `${import.meta.env.VITE_API_ORDER}${orderId}/item/${id}/`; // Adjust the URL as needed
+  const url = `api/orders/${orderId}/item/${id}/`; // Adjust the URL as needed
   const token = localStorage.getItem('access');
   console.log(url);
 
   try {
-    const response = await axios.patch(
+    const response = await apiClient.patch(
       url,
       {
         quantity: quantity,
@@ -264,12 +264,12 @@ export const updateItemOfOrder = async (orderId, id, quantity) => {
 
 //Delete item of from order, take as param the order_id, the id of the product in the commande
 export const deleteItemfromOrder = async (orderId, id) => {
-  const url = `${import.meta.env.VITE_API_ORDER}${orderId}/item/${id}/`; // Adjust the URL as needed
+  const url = `api/orders/${orderId}/item/${id}/`; // Adjust the URL as needed
   const token = localStorage.getItem('access');
   console.log(url);
 
   try {
-    const response = await axios.delete(url, {
+    const response = await apiClient.delete(url, {
       headers: {
         Authorization: `Bearer ${token}`, // Set the authorization token in the headers
         'Content-Type': 'application/json', // Set the content type to JSON
@@ -290,7 +290,7 @@ export const deleteItemfromOrder = async (orderId, id) => {
 export const getOrdersPendings = async () => {
   const token = localStorage.getItem('access');
   try {
-    const response = await axios.get(import.meta.env.VITE_API_ORDERS_PENDINGS, {
+    const response = await apiClient.get('api/orders/pending/', {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -410,15 +410,21 @@ export const getFilteredProducts = async ({
 };
 
 export const getProductsStocks = async ({ store = '', product = '' }) => {
-  const url = `api/store/${store}/stocks/${product}/ `;
+  const url = `api/store/${store}/stocks/${product}/`;
   console.log(url);
   try {
     const response = await apiClient.get(url);
-
     return response.data; // Return the data if successful
   } catch (error) {
     console.error('Error fetching products:', error);
-    return { error: 'Failed to fetch products' }; // Return error message
+
+    // Check if the error response status is 404
+    if (error.response && error.response.status === 404) {
+      return { quantity_in_stock: 0 }; // Return default value for 404
+    }
+
+    // Return a generic error for other cases
+    return { error: 'Failed to fetch products' };
   }
 };
 
@@ -468,5 +474,33 @@ export const updatePaymentStatus = async (orderId, status) => {
       console.error('Error updating payment status:', error.message);
       alert(`Failed to update payment status: ${error.message}`);
     }
+  }
+};
+
+export const updateOrderStatus = async (order_id, status) => {
+  const token = localStorage.getItem('access'); // Retrieve the token from localStorage
+
+  try {
+    // Use PATCH for updating partial resources
+    const response = await apiClient.patch(
+      `api/orders/${order_id}/`,
+      { status: status }, // Data to be sent in the body of the request
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add Bearer token for authentication
+          'Content-Type': 'application/json', // Set the Content-Type header
+        },
+      }
+    );
+
+    return response.data; // Return the updated order data
+  } catch (error) {
+    console.error('Error updating order status:', error);
+
+    // Return an error object for better error handling
+    return {
+      error: 'Failed to update order status',
+      details: error.response ? error.response.data : error.message,
+    };
   }
 };

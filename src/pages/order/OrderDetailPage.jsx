@@ -50,23 +50,43 @@ const OrderDetailPage = () => {
   const checkStocks = async (order) => {
     for (let item of order.items) {
       const { product, quantity } = item;
-      const stockData = await getProductsStocks({
-        store: 'CRE71780',
-        product: product.product_id, // assuming product_id is a unique identifier for the product
-      });
 
-      // Check if the stock is insufficient
-      if (stockData && stockData.quantity_in_stock < quantity) {
+      try {
+        const stockData = await getProductsStocks({
+          store: 'CRE71780',
+          product: product.product_id, // assuming product_id uniquely identifies the product
+        });
+
+        // Check if stock is insufficient
+        if (!stockData || stockData.quantity_in_stock < quantity) {
+          toast({
+            title: 'Insufficient Stock',
+            description: `Not enough stock for ${product.product_name}. Only ${
+              stockData.quantity_in_stock || 0
+            } items are available.`,
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+          return false; // Stop the process for insufficient stock
+        }
+      } catch (error) {
+        console.error(
+          `Failed to check stock for ${product.product_name}`,
+          error
+        );
+
         toast({
-          title: 'Insufficient Stock',
-          description: `Not enough stock for ${product.product_name}. Only ${stockData.quantity_in_stock} items are available.`,
+          title: 'Error Checking Stock',
+          description: `Unable to verify stock for ${product.product_name}. Please try again.`,
           status: 'error',
           duration: 5000,
           isClosable: true,
         });
-        return false; // Stop the checkout process if any item has insufficient stock
+        return false; // Stop process for API errors
       }
     }
+
     return true; // All items have sufficient stock
   };
 

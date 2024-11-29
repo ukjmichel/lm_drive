@@ -1,86 +1,151 @@
-// import { useEffect, useState } from 'react';
-// import { useParams } from 'react-router-dom'; // Import useParams
-// import { BaseLayout } from '../../components';
-// import { getCustomerOrder } from '../../api/apiClient';
-// import { Box, Flex, Checkbox, Text } from '@chakra-ui/react';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { BaseLayout } from '../../components';
+import { getCustomerOrder, updateOrderStatus } from '../../api/apiClient';
+import { Box, Flex, Checkbox, Text, Spinner, useToast } from '@chakra-ui/react';
 
-// const OrdersListPage = () => {
-//   const { orderId } = useParams(); // Retrieve order ID from URL
-//   const [order, setOrder] = useState();
-//   const [orderItems, setOrderItems] = useState([]);
-//   const [checkedItems, setCheckedItems] = useState([]);
-//   const [finalCheckboxChecked, setFinalCheckboxChecked] = useState(false);
+const OrdersListPage = () => {
+  const { orderId } = useParams(); // Retrieve order ID from URL
+  const navigate = useNavigate(); // Initialize useNavigate
+  const [order, setOrder] = useState(null);
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [loading, setLoading] = useState(false); // For API call status
+  const [error, setError] = useState(null); // For error handling
+  const toast = useToast(); // Chakra UI Toast for notifications
 
-//   useEffect(() => {
-//     const fetchOrders = async () => {
-//       try {
-//         const response = await getCustomerOrder(orderId);
+  // Fetch order details on component mount
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await getCustomerOrder(orderId);
 
-//         setOrder(response); // Set specific order if found
-//         setOrderItems(response.items);
-//         setCheckedItems(new Array(response.items.length).fill(false)); // Initialize checkbox state
-//       } catch (error) {
-//         console.error('Error fetching orders:', error);
-//       }
-//     };
+        // Initialize item checkboxes based on order status
+        const allItemsChecked = response.status === 'ready';
+        setOrder(response);
+        setCheckedItems(
+          new Array(response.items.length).fill(allItemsChecked) // All true if "ready", otherwise all false
+        );
+      } catch (err) {
+        console.error('Error fetching order:', err);
+        setError('Failed to fetch order details.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-//     fetchOrders();
-//   }, [orderId]); // Add orderId as a dependency
+    fetchOrders();
+  }, [orderId]);
 
-//   // Function to handle individual checkbox changes
-//   const handleCheckboxChange = (index) => {
-//     const updatedCheckedItems = [...checkedItems];
-//     updatedCheckedItems[index] = !updatedCheckedItems[index];
-//     setCheckedItems(updatedCheckedItems);
-//   };
+  // Derived state: whether all item checkboxes are checked
+  const allChecked = checkedItems.every(Boolean);
 
-//   // Function to check if all checkboxes are validated
-//   const allChecked = checkedItems.every(Boolean);
+  // Function to handle individual checkbox changes
+  const handleCheckboxChange = useCallback((index) => {
+    setCheckedItems((prev) => {
+      const updated = [...prev];
+      updated[index] = !updated[index];
+      return updated;
+    });
+  }, []);
 
-//   return (
-//     <BaseLayout>
-//       <Flex margin={4} gap={4}>
-//         <Box>Numéros de commande</Box>
-//         <Box>{orderId ? orderId.toUpperCase() : 'N/A'}</Box>
-//       </Flex>
+  // Function to handle final checkbox change
+  const handleFinalCheckboxChange = useCallback(async () => {
+    if (!order) return;
 
-//       {orderItems.map(({ id, product, quantity }, index) => (
-//         <Flex
-//           key={id}
-//           gap={4}
-//           margin={4}
-//           borderBottom="1px solid"
-//           borderColor="gray.200"
-//           py={2}
-//         >
-//           <Flex width="350px">
-//             <Box width="100px">{product.product_name}</Box>
-//             <Box width="100px">{product.brand}</Box>
-//             <Box width="40px">{quantity}</Box>
-//             <Box width="100px">{product.price}</Box>
-//           </Flex>
-//           <Checkbox
-//             isChecked={checkedItems[index]}
-//             isDisabled={finalCheckboxChecked} // Disable when the final checkbox is checked
-//             onChange={() => handleCheckboxChange(index)}
-//           />
-//         </Flex>
-//       ))}
+    const newStatus = order.status === 'ready' ? 'confirmed' : 'ready';
 
-//       <Flex margin={4} gap={4}>
-//         <Flex width="350px">
-//           <Box>
-//             <Text>Commande prête</Text>
-//           </Box>
-//         </Flex>
-//         <Checkbox
-//           isChecked={finalCheckboxChecked}
-//           isDisabled={!allChecked} // Enable only when all other checkboxes are checked
-//           onChange={() => setFinalCheckboxChecked(!finalCheckboxChecked)}
-//         />
-//       </Flex>
-//     </BaseLayout>
-//   );
-// };
+    try {
+      setLoading(true);
+      setError(null);
 
-// export default OrdersListPage;
+      const response = await updateOrderStatus(orderId, newStatus);
+
+      // Update order status locally
+      setOrder((prev) => ({ ...prev, status: response.status }));
+
+      // Show success toast notification
+      toast({
+        title: `Order status updated to ${response.status}.`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Navigate to /admin/orders/ after 1-second timeout if the status is set to "ready"
+      if (response.status === 'ready') {
+        setTimeout(() => {
+          navigate('/admin/orders/');
+        }, 1000); // 1-second delay
+      }
+    } catch (err) {
+      console.error('Error updating order status:', err);
+      setError('Failed to update order status.');
+    } finally {
+      setLoading(false);
+    }
+  }, [order, orderId, toast, navigate]);
+
+  if (loading && !order) {
+    return (
+      <BaseLayout>
+        <Flex justifyContent="center" alignItems="center" height="100vh">
+          <Spinner size="xl" />
+        </Flex>
+      </BaseLayout>
+    );
+  }
+
+  return (
+    <BaseLayout>
+      <Flex margin={4} gap={4}>
+        <Box>Order Number</Box>
+        <Box>{orderId ? orderId.toUpperCase() : 'N/A'}</Box>
+      </Flex>
+
+      {error && (
+        <Text color="red" margin={4}>
+          {error}
+        </Text>
+      )}
+
+      {order?.items.map(({ id, product, quantity }, index) => (
+        <Flex
+          key={id}
+          gap={4}
+          margin={4}
+          borderBottom="1px solid"
+          borderColor="gray.200"
+          py={2}
+        >
+          <Flex width="350px">
+            <Box width="100px">{product.product_name}</Box>
+            <Box width="100px">{product.brand}</Box>
+            <Box width="40px">{quantity}</Box>
+            <Box width="100px">{product.price}</Box>
+          </Flex>
+          <Checkbox
+            isChecked={checkedItems[index]}
+            isDisabled={order?.status === 'ready'} // Disable when the final checkbox is checked
+            onChange={() => handleCheckboxChange(index)}
+          />
+        </Flex>
+      ))}
+
+      <Flex margin={4} gap={4}>
+        <Flex width="350px">
+          <Box>
+            <Text>Order Ready</Text>
+          </Box>
+        </Flex>
+        <Checkbox
+          isChecked={order?.status === 'ready'}
+          isDisabled={!allChecked || loading} // Enable only when all other checkboxes are checked
+          onChange={handleFinalCheckboxChange} // Call API when the checkbox state changes
+        />
+      </Flex>
+    </BaseLayout>
+  );
+};
+
+export default OrdersListPage;

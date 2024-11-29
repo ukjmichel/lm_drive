@@ -10,7 +10,7 @@ import {
 } from './pages';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './hook/AuthContext';
-// import { AdminOrdersListPage, AdminOrderDetailPage } from './pages/admin';
+import { AdminOrdersListPage, AdminOrderDetailPage } from './pages/admin';
 import 'leaflet/dist/leaflet.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -29,11 +29,11 @@ function App() {
               <Route path="/store" element={<StorePage />} />
               <Route path="/cart" element={<OrderDetailPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
-              {/* <Route path="/admin/orders" element={<AdminOrdersListPage />} /> */}
-              {/* <Route
+              <Route path="/admin/orders" element={<AdminOrdersListPage />} />
+              <Route
                 path="/admin/orders/:orderId"
                 element={<AdminOrderDetailPage />}
-              /> */}
+              />
               <Route path="/store/:id" element={<StoreListPage />} />
             </Routes>
           </ChakraProvider>
