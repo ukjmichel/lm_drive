@@ -3,7 +3,7 @@ import { useAuth } from '../../hook/AuthContext';
 import BaseFooter from '../sections/BaseFooter';
 import BaseNavbar from '../navbar/BaseNavbar';
 import { Box } from '@chakra-ui/react';
-import ConnectedNavbar from '../sections/ConnectedNavbar';
+import ConnectedNavbar from '../navbar/ConnectedNavbar';
 import AdminNavbar from '../navbar/AdminNavBar';
 
 const BaseLayout = ({ children }) => {

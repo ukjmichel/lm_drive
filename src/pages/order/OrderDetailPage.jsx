@@ -1,4 +1,17 @@
-import { Box, Button, Flex, Heading, Text, useToast } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Text,
+  useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react';
 import { BaseLayout } from '../../components';
 import {
   getCustomerOrders,
@@ -10,19 +23,28 @@ import {
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OrderLine from './OrderLine';
+import OrderCard from './OrderCard';
 
 const OrderDetailPage = () => {
   const [order, setOrder] = useState({});
-  const { order_id, items = [], total_amount } = order;
+  const [otherOrders, setOtherOrders] = useState([]); // Stocker les commandes confirmées et prêtes
+  const [selectedOrder, setSelectedOrder] = useState(null); // Pour afficher les détails dans une modal
+  const { order_id, items = [], total_amount, confirmed_date } = order; // Ajout de confirmed_date
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Fetch order details
-  const fetchOrder = async () => {
+  // Récupérer les commandes et détails
+  const fetchOrders = async () => {
     try {
-      let response = await getCustomerOrders();
-      let pendingOrder = response.filter((order) => order.status === 'pending');
-      if (pendingOrder.length === 0) {
+      const response = await getCustomerOrders();
+      const pendingOrder = response.find((order) => order.status === 'pending');
+      const confirmedAndReadyOrders = response.filter(
+        (order) => order.status === 'confirmed' || order.status === 'ready'
+      );
+
+      setOtherOrders(confirmedAndReadyOrders);
+
+      if (!pendingOrder) {
         const customerData = await fetchCustomerData();
         const customerId = customerData[0].customer_id;
         await createCustomerOrder({
@@ -30,67 +52,45 @@ const OrderDetailPage = () => {
           storeId: 'CRE71780',
         });
       }
-      response = await getCustomerOrders();
-      pendingOrder = response.filter((order) => order.status === 'pending');
-      const pendingOrderDetail = await getCustomerOrder(
-        pendingOrder[0].order_id
+
+      const updatedResponse = await getCustomerOrders();
+      const newPendingOrder = updatedResponse.find(
+        (order) => order.status === 'pending'
       );
 
-      setOrder(pendingOrderDetail);
+      if (newPendingOrder) {
+        const pendingOrderDetail = await getCustomerOrder(
+          newPendingOrder.order_id
+        );
+        setOrder(pendingOrderDetail);
+      }
     } catch (error) {
-      console.error('Error fetching order:', error);
+      console.error('Erreur lors de la récupération des commandes:', error);
     }
   };
 
   useEffect(() => {
-    fetchOrder();
+    fetchOrders();
   }, []);
 
-  // Function to check stock levels for each product in the order
-  const checkStocks = async (order) => {
-    for (let item of order.items) {
-      const { product, quantity } = item;
-
-      try {
-        const stockData = await getProductsStocks({
-          store: 'CRE71780',
-          product: product.product_id, // assuming product_id uniquely identifies the product
-        });
-
-        // Check if stock is insufficient
-        if (!stockData || stockData.quantity_in_stock < quantity) {
-          toast({
-            title: 'Insufficient Stock',
-            description: `Not enough stock for ${product.product_name}. Only ${
-              stockData.quantity_in_stock || 0
-            } items are available.`,
-            status: 'error',
-            duration: 5000,
-            isClosable: true,
-          });
-          return false; // Stop the process for insufficient stock
-        }
-      } catch (error) {
-        console.error(
-          `Failed to check stock for ${product.product_name}`,
-          error
-        );
-
-        toast({
-          title: 'Error Checking Stock',
-          description: `Unable to verify stock for ${product.product_name}. Please try again.`,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        return false; // Stop process for API errors
-      }
+  // Fonction pour afficher les détails dans une modal
+  const openOrderDetails = async (orderId) => {
+    try {
+      const orderDetails = await getCustomerOrder(orderId);
+      setSelectedOrder(orderDetails);
+    } catch (error) {
+      console.error(
+        'Erreur lors de la récupération des détails de la commande:',
+        error
+      );
     }
-
-    return true; // All items have sufficient stock
   };
 
-  // Handle the checkout process
+  const closeOrderDetails = () => {
+    setSelectedOrder(null);
+  };
+
+  // Gestion de la validation de la commande
   const handleCheckout = async () => {
     const stockCheckPassed = await checkStocks(order);
     if (stockCheckPassed) {
@@ -98,11 +98,86 @@ const OrderDetailPage = () => {
     }
   };
 
+  const checkStocks = async (order) => {
+    for (let item of order.items) {
+      const { product, quantity } = item;
+      try {
+        const stockData = await getProductsStocks({
+          store: 'CRE71780',
+          product: product.product_id,
+        });
+
+        if (!stockData || stockData.quantity_in_stock < quantity) {
+          toast({
+            title: 'Stock insuffisant',
+            description: `Pas assez de stock pour ${
+              product.product_name
+            }. Il reste seulement ${
+              stockData.quantity_in_stock || 0
+            } articles disponibles.`,
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+          return false;
+        }
+      } catch (error) {
+        console.error(
+          `Échec de la vérification du stock pour ${product.product_name}`,
+          error
+        );
+        toast({
+          title: 'Erreur de vérification du stock',
+          description: `Impossible de vérifier le stock pour ${product.product_name}. Veuillez réessayer.`,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   return (
     <BaseLayout>
-      <Flex margin={4} gap={4} alignItems={'center'}>
-        <Heading fontSize={'xl'}>Numéros de commande: </Heading>
-        <Text textTransform="uppercase" fontSize={'xl'}>
+      <Box marginBottom={6}>
+        <Heading fontSize="xl">Commandes en cours</Heading>
+        {otherOrders.length > 0 ? (
+          <>
+            {/* Afficher les commandes prêtes */}
+            {otherOrders
+              .filter((order) => order.status === 'ready')
+              .map((order) => (
+                <OrderCard
+                  key={order.order_id}
+                  order={order}
+                  onClick={openOrderDetails}
+                  isReady={true} // Commande prête
+                />
+              ))}
+
+            {/* Afficher les commandes confirmées */}
+            {otherOrders
+              .filter((order) => order.status === 'confirmed')
+              .map((order) => (
+                <OrderCard
+                  key={order.order_id}
+                  order={order}
+                  onClick={openOrderDetails}
+                  isReady={false} // Commande confirmée
+                />
+              ))}
+          </>
+        ) : (
+          <Text>Aucune commande confirmée ou prête.</Text>
+        )}
+      </Box>
+
+      <Flex margin={4} gap={4} alignItems="center">
+        <Heading fontSize="xl">Numéro de commande : </Heading>
+        <Text textTransform="uppercase" fontSize="xl">
           {order_id || 'N/A'}
         </Text>
       </Flex>
@@ -113,33 +188,65 @@ const OrderDetailPage = () => {
               key={item.id}
               {...item}
               order_id={order_id}
-              onUpdate={fetchOrder} // Pass fetchOrder to refresh on update
-              onDelete={fetchOrder} // Pass fetchOrder to refresh on delete
+              onUpdate={fetchOrders}
+              onDelete={fetchOrders}
             />
           ))
         ) : (
-          <Box>No items in the order.</Box>
+          <Box>Aucun article dans la commande.</Box>
         )}
         <Flex
-          w={{ base: '100%' }}
+          w="100%"
           p={4}
           fontSize={18}
-          alignItems={'center'}
+          alignItems="center"
           justifyContent="space-between"
         >
-          <Text fontSize={'lg'} fontWeight="bold">
-            Total Amount: {total_amount?.toFixed(2)} Euros
+          <Text fontSize="lg" fontWeight="bold">
+            Montant Total : {total_amount?.toFixed(2)} Euros
           </Text>
           <Button
-            bg={'green.400'}
-            color={'white'}
+            bg="green.400"
+            color="white"
             _hover={{ bg: 'green.300' }}
-            onClick={handleCheckout} // Trigger stock check and proceed to checkout
+            onClick={handleCheckout}
           >
-            Valider commande
+            Valider la commande
           </Button>
         </Flex>
       </Box>
+
+      {/* Modal pour les détails de commande */}
+      {selectedOrder && (
+        <Modal isOpen={true} onClose={closeOrderDetails}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Détails de la commande</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Text textTransform="uppercase">
+                Commande : {selectedOrder.order_id}
+              </Text>
+              <Text>
+                Statut :{' '}
+                {selectedOrder.status === 'confirmed' ? 'Confirmée' : 'Prête'}
+              </Text>
+              <Text>
+                Date :{' '}
+                {new Date(selectedOrder.confirmed_date).toLocaleDateString()}
+              </Text>
+              <Text>Montant Total : {selectedOrder.total_amount} Euros</Text>
+              <Box>
+                {selectedOrder.items.map((item) => (
+                  <Text key={item.id}>
+                    {item.product.product_name} - Quantité : {item.quantity}
+                  </Text>
+                ))}
+              </Box>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </BaseLayout>
   );
 };

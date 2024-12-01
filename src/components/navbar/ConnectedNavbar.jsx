@@ -21,9 +21,9 @@ import {
 } from '@chakra-ui/icons';
 
 import { IoIosBasket } from 'react-icons/io';
-import { useAuth } from '../../hook/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { useAuth } from '../../hook/AuthContext';
 
 const ConnectedNavbar = () => {
   const { isOpen, onToggle } = useDisclosure();
@@ -265,7 +265,7 @@ const NAV_ITEMS = [
   },
   {
     label: 'Historique',
-    url: '/',
+    url: '/historic',
   },
 ];
 

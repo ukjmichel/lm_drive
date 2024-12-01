@@ -1,6 +1,7 @@
 import './App.css';
 import { ChakraProvider } from '@chakra-ui/react';
 import {
+  FulfilledOrdersPage,
   HomePage,
   OrderDetailPage,
   SignInPage,
@@ -27,6 +28,7 @@ function App() {
               <Route path="/signin" element={<SignInPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/store" element={<StorePage />} />
+              <Route path="/historic" element={<FulfilledOrdersPage />} />
               <Route path="/cart" element={<OrderDetailPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/admin/orders" element={<AdminOrdersListPage />} />

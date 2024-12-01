@@ -95,32 +95,49 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const getToken = async (username, password) => {
+export const getToken = async (username = '', password = '') => {
   try {
-    const response = await apiClient.post('api/token/', {
-      username,
-      password,
-    });
-    return response;
+    const response = await apiClient.post('api/token/', { username, password });
+
+    // Requête réussie
+    return {
+      success: true,
+      data: response.data, // Contient les tokens (access et refresh)
+    };
   } catch (error) {
-    console.error('Login error:', error.message || error);
-    throw error;
+    // Gérer les erreurs API
+    if (error.response) {
+      console.error('Erreur API :', {
+        status: error.response.status,
+        data: error.response.data,
+      });
+
+      return {
+        success: false,
+        status: error.response.status,
+        message: error.response.data?.detail || 'Erreur API inconnue.',
+      };
+    }
+
+    // Gérer les erreurs réseau ou autres
+    console.error('Erreur réseau ou autre problème :', error.message);
+    return {
+      success: false,
+      status: null,
+      message: "Une erreur réseau s'est produite.",
+    };
   }
 };
+
 export const createAccount = async ({ username, password, email }) => {
-  try {
-    const response = await apiClient.post('api/customers/', {
-      user: {
-        username: username,
-        password: password,
-      },
-      email: email,
-    });
-    return response;
-  } catch (error) {
-    console.error('Signup error:', error.message || error);
-    throw error;
-  }
+  const response = await apiClient.post('api/customers/', {
+    user: {
+      username: username,
+      password: password,
+    },
+    email: email,
+  });
+  return response;
 };
 
 // Fetch all products
@@ -173,7 +190,6 @@ export const getCustomerOrder = async (orderId) => {
 // Create customer order
 export const createCustomerOrder = async ({ customerId, storeId }) => {
   const token = localStorage.getItem('access');
-  console.log(customerId, storeId);
   try {
     const response = await apiClient.post(
       'api/orders/',
@@ -236,7 +252,7 @@ export const addItemToOrder = async (orderId, product_id, quantity) => {
 export const updateItemOfOrder = async (orderId, id, quantity) => {
   const url = `api/orders/${orderId}/item/${id}/`; // Adjust the URL as needed
   const token = localStorage.getItem('access');
-  console.log(url);
+  // console.log(url);
 
   try {
     const response = await apiClient.patch(
@@ -266,7 +282,7 @@ export const updateItemOfOrder = async (orderId, id, quantity) => {
 export const deleteItemfromOrder = async (orderId, id) => {
   const url = `api/orders/${orderId}/item/${id}/`; // Adjust the URL as needed
   const token = localStorage.getItem('access');
-  console.log(url);
+  // console.log(url);
 
   try {
     const response = await apiClient.delete(url, {
@@ -305,7 +321,7 @@ export const getOrdersPendings = async () => {
 };
 
 export const processPayment = async (paymentData) => {
-  console.log(paymentData);
+  // console.log(paymentData);
   try {
     // Log the payment data being sent for debugging purposes
     //console.log('Sending payment data:', paymentData);
@@ -411,7 +427,7 @@ export const getFilteredProducts = async ({
 
 export const getProductsStocks = async ({ store = '', product = '' }) => {
   const url = `api/store/${store}/stocks/${product}/`;
-  console.log(url);
+  // console.log(url);
   try {
     const response = await apiClient.get(url);
     return response.data; // Return the data if successful

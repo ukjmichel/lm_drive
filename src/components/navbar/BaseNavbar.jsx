@@ -244,7 +244,7 @@ const NAV_ITEMS = [
     url: '/',
   },
   {
-    label: 'Store',
+    label: 'Boutique',
     url: '/store',
   },
 ];

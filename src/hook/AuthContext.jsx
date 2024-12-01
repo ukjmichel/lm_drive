@@ -12,28 +12,33 @@ const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await getToken(username, password);
+      const result = await getToken(username, password);
 
-      if (response.status === 200) {
-        const accessToken = response.data.access;
-        const refreshToken = response.data.refresh;
+      if (result.success) {
+        console.log('Tokens reçus :', result.data);
 
-        localStorage.setItem('access', accessToken);
-        localStorage.setItem('refresh', refreshToken);
+        const { access, refresh } = result.data;
+
+        // Stockage des tokens dans localStorage
+        localStorage.setItem('access', access);
+        localStorage.setItem('refresh', refresh);
+
+        // Mise à jour de l'état d'authentification
         setAuth(true);
 
-        const decodedToken = jwtDecode(accessToken);
+        const decodedToken = jwtDecode(access);
+        console.log('Token décodé :', decodedToken);
 
         if (decodedToken.is_admin) {
-          setIsAdmin(true);
+          setIsAdmin(true); // Activation du mode admin si nécessaire
         }
       } else {
-        throw new Error(
-          `Login failed: ${response.status} ${response.statusText}`
-        );
+        // Gérer les erreurs de connexion avec des messages appropriés
+        console.error('Échec de la connexion :', result.message);
+        throw new Error(result.message);
       }
     } catch (error) {
-      console.error('Login error:', error.message || error);
+      console.error('Erreur lors de la connexion :', error.message || error);
       throw error;
     }
   };

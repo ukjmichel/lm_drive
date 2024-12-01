@@ -4,31 +4,91 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
   Stack,
   Button,
   Heading,
-  Text,
   useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
 
 import { useState } from 'react';
 import { useAuth } from '../../hook/AuthContext';
 
-
 const SignInForm = () => {
   const { login } = useAuth();
+  const toast = useToast();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Réinitialiser les toasts
+    toast.closeAll();
+
+    // Validation des champs
+    if (!username.trim() || !password.trim()) {
+      toast({
+        title: 'Champs requis',
+        description: 'Veuillez remplir tous les champs avant de continuer.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Timeout pour forcer l'arrêt de l'état de chargement après 10 secondes
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: 'Erreur de connection',
+        description:
+          'Le serveur met trop de temps à répondre. Veuillez réessayer.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }, 10000); // Timeout de 10 secondes
+
     try {
       await login(username, password);
-      // Handle successful login (e.g., redirect to another page)
-      console.log('Login successful'); // Replace with redirect logic
+
+      // Annuler le timeout en cas de succès
+      clearTimeout(timeout);
+
+      // Succès : afficher un message de réussite
+      toast({
+        title: 'Connexion réussie',
+        description: 'Vous êtes maintenant connecté.',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+
+      // Logique de redirection ici si nécessaire
+      console.log('Connexion réussie');
     } catch (error) {
-      console.log(error);
+      // Annuler le timeout en cas d'erreur
+      clearTimeout(timeout);
+
+      const errorMessage =
+        error?.response?.data?.detail ||
+        'Identifiant ou mot de passe incorrect.';
+      toast({
+        title: 'Erreur de connexion',
+        description: errorMessage,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+
+      console.error('Erreur lors de la connexion :', error);
+    } finally {
+      setIsLoading(false); // Réinitialiser l'état de chargement
     }
   };
 
@@ -41,7 +101,7 @@ const SignInForm = () => {
     >
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
         <Stack align={'center'}>
-          <Heading fontSize={'4xl'}>Connecter vous</Heading>
+          <Heading fontSize={'4xl'}>Connectez-vous</Heading>
         </Stack>
         <Box
           rounded={'lg'}
@@ -49,45 +109,41 @@ const SignInForm = () => {
           boxShadow={'lg'}
           p={8}
         >
-          <Stack spacing={4}>
-            <FormControl id="username">
-              <FormLabel>Identifiant</FormLabel>
-              <Input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </FormControl>
-            <FormControl id="password">
-              <FormLabel>Mot de passe</FormLabel>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </FormControl>
-            <Stack spacing={10}>
-              <Stack
-                direction={{ base: 'column', sm: 'row' }}
-                align={'start'}
-                justify={'space-between'}
-              >
-                <Checkbox>Remember me</Checkbox>
-                <Text color={'blue.400'}>Forgot password?</Text>
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={4}>
+              <FormControl id="username" isRequired>
+                <FormLabel>Identifiant</FormLabel>
+                <Input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Entrez votre identifiant"
+                />
+              </FormControl>
+              <FormControl id="password" isRequired>
+                <FormLabel>Mot de passe</FormLabel>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Entrez votre mot de passe"
+                />
+              </FormControl>
+              <Stack spacing={10}>
+                <Button
+                  isLoading={isLoading} // Désactiver le bouton lors du chargement
+                  bg={'blue.400'}
+                  color={'white'}
+                  _hover={{
+                    bg: 'blue.500',
+                  }}
+                  type="submit"
+                >
+                  Se connecter
+                </Button>
               </Stack>
-              <Button
-                bg={'blue.400'}
-                color={'white'}
-                _hover={{
-                  bg: 'blue.500',
-                }}
-                type="submit"
-                onClick={handleSubmit}
-              >
-                Se connecter
-              </Button>
             </Stack>
-          </Stack>
+          </form>
         </Box>
       </Stack>
     </Flex>
