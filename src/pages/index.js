@@ -5,6 +5,8 @@ import SignInPage from './SignInPage';
 import SignUpPage from './SignUpPage';
 import OrderDetailPage from './order/OrderDetailPage';
 import FulfilledOrdersPage from './order/FulfilledOrderPage';
+import UserProfilPage from './UserProfilPage';
+import CheckoutPage from './CheckoutPage';
 
 export {
   HomePage,
@@ -13,5 +15,7 @@ export {
   StorePage,
   OrderDetailPage,
   StoreListPage,
-  FulfilledOrdersPage
+  FulfilledOrdersPage,
+  UserProfilPage,
+  CheckoutPage,
 };

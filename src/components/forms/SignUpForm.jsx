@@ -26,6 +26,7 @@ const SignUpForm = () => {
     username: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +68,15 @@ const SignUpForm = () => {
       validationErrors.password = passwordError;
     }
 
+    // Validation pour le champ "confirmPassword"
+    if (!formData.confirmPassword.trim()) {
+      validationErrors.confirmPassword =
+        'La confirmation du mot de passe est requise.';
+    } else if (formData.password !== formData.confirmPassword) {
+      validationErrors.confirmPassword =
+        'Les mots de passe ne correspondent pas.';
+    }
+
     return validationErrors;
   };
 
@@ -94,7 +104,12 @@ const SignUpForm = () => {
       const response = await createAccount(formData);
 
       if (response.status === 201) {
-        setFormData({ username: '', email: '', password: '' });
+        setFormData({
+          username: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
         toast({
           title: 'Inscription réussie',
           description: 'Votre compte a été créé avec succès.',
@@ -216,6 +231,24 @@ const SignUpForm = () => {
                 {errors.password && (
                   <Text color="red.500" mt={1}>
                     {errors.password}
+                  </Text>
+                )}
+              </FormControl>
+
+              {/* Champ confirmPassword */}
+              <FormControl
+                id="confirmPassword"
+                isInvalid={Boolean(errors.confirmPassword)}
+              >
+                <FormLabel>Confirmer le mot de passe</FormLabel>
+                <Input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+                {errors.confirmPassword && (
+                  <Text color="red.500" mt={1}>
+                    {errors.confirmPassword}
                   </Text>
                 )}
               </FormControl>

@@ -15,7 +15,7 @@ const AuthProvider = ({ children }) => {
       const result = await getToken(username, password);
 
       if (result.success) {
-        console.log('Tokens reçus :', result.data);
+        //console.log('Tokens reçus :', result.data);
 
         const { access, refresh } = result.data;
 
@@ -27,7 +27,7 @@ const AuthProvider = ({ children }) => {
         setAuth(true);
 
         const decodedToken = jwtDecode(access);
-        console.log('Token décodé :', decodedToken);
+        //console.log('Token décodé :', decodedToken);
 
         if (decodedToken.is_admin) {
           setIsAdmin(true); // Activation du mode admin si nécessaire

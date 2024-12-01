@@ -156,7 +156,7 @@ export const fetchAllProducts = async () => {
 export const fetchCustomerData = async () => {
   try {
     const response = await apiClient.get('api/customers/');
-
+    //console.log(response);
     return response.data; // Return the data if successful
   } catch (error) {
     console.error('Error fetching customer data:', error);
@@ -518,5 +518,24 @@ export const updateOrderStatus = async (order_id, status) => {
       error: 'Failed to update order status',
       details: error.response ? error.response.data : error.message,
     };
+  }
+};
+
+export const updateCustomerInfo = async (customer_id, payload) => {
+  try {
+    const response = await apiClient.patch(
+      `api/customers/${customer_id}/`,
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    // Traite les erreurs et les relance pour le gestionnaire de l'appel
+    if (error.response) {
+      throw new Error(
+        error.response.data.detail || "Une erreur s'est produite."
+      );
+    } else {
+      throw new Error('Impossible de contacter le serveur.');
+    }
   }
 };

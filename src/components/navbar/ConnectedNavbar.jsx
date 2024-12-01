@@ -260,13 +260,18 @@ const NAV_ITEMS = [
     url: '/',
   },
   {
-    label: 'Store',
+    label: 'Boutique',
     url: '/store',
   },
   {
     label: 'Historique',
     url: '/historic',
   },
+  {
+    label: 'Profile',
+    url: '/profil',
+  },
+
 ];
 
 export default ConnectedNavbar;

@@ -1,17 +1,5 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Text,
-  useToast,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Text, useToast } from '@chakra-ui/react';
+import { motion } from 'framer-motion';
 import { BaseLayout } from '../../components';
 import {
   getCustomerOrders,
@@ -24,16 +12,20 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OrderLine from './OrderLine';
 import OrderCard from './OrderCard';
+import OrderModal from './OrderModal';
+
+// Utilisation de motion.create pour définir des composants animés
+const MotionBox = motion.create(Box);
+const MotionFlex = motion.create(Flex);
 
 const OrderDetailPage = () => {
   const [order, setOrder] = useState({});
-  const [otherOrders, setOtherOrders] = useState([]); // Stocker les commandes confirmées et prêtes
-  const [selectedOrder, setSelectedOrder] = useState(null); // Pour afficher les détails dans une modal
-  const { order_id, items = [], total_amount, confirmed_date } = order; // Ajout de confirmed_date
+  const [otherOrders, setOtherOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const { order_id, items = [], total_amount } = order;
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Récupérer les commandes et détails
   const fetchOrders = async () => {
     try {
       const response = await getCustomerOrders();
@@ -73,7 +65,6 @@ const OrderDetailPage = () => {
     fetchOrders();
   }, []);
 
-  // Fonction pour afficher les détails dans une modal
   const openOrderDetails = async (orderId) => {
     try {
       const orderDetails = await getCustomerOrder(orderId);
@@ -90,7 +81,6 @@ const OrderDetailPage = () => {
     setSelectedOrder(null);
   };
 
-  // Gestion de la validation de la commande
   const handleCheckout = async () => {
     const stockCheckPassed = await checkStocks(order);
     if (stockCheckPassed) {
@@ -136,17 +126,21 @@ const OrderDetailPage = () => {
         return false;
       }
     }
-
     return true;
   };
 
   return (
     <BaseLayout>
       <Box marginBottom={6}>
-        <Heading fontSize="xl">Commandes en cours</Heading>
+        <Heading fontSize="xl" p={4}>
+          Commandes en cours
+        </Heading>
         {otherOrders.length > 0 ? (
-          <>
-            {/* Afficher les commandes prêtes */}
+          <MotionBox
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             {otherOrders
               .filter((order) => order.status === 'ready')
               .map((order) => (
@@ -154,11 +148,10 @@ const OrderDetailPage = () => {
                   key={order.order_id}
                   order={order}
                   onClick={openOrderDetails}
-                  isReady={true} // Commande prête
+                  isReady={true}
                 />
               ))}
 
-            {/* Afficher les commandes confirmées */}
             {otherOrders
               .filter((order) => order.status === 'confirmed')
               .map((order) => (
@@ -166,10 +159,10 @@ const OrderDetailPage = () => {
                   key={order.order_id}
                   order={order}
                   onClick={openOrderDetails}
-                  isReady={false} // Commande confirmée
+                  isReady={false}
                 />
               ))}
-          </>
+          </MotionBox>
         ) : (
           <Text>Aucune commande confirmée ou prête.</Text>
         )}
@@ -183,17 +176,23 @@ const OrderDetailPage = () => {
       </Flex>
       <Box>
         {items.length > 0 ? (
-          items.map((item) => (
-            <OrderLine
+          items.map((item, index) => (
+            <MotionFlex
               key={item.id}
-              {...item}
-              order_id={order_id}
-              onUpdate={fetchOrders}
-              onDelete={fetchOrders}
-            />
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
+              <OrderLine
+                {...item}
+                order_id={order_id}
+                onUpdate={fetchOrders}
+                onDelete={fetchOrders}
+              />
+            </MotionFlex>
           ))
         ) : (
-          <Box>Aucun article dans la commande.</Box>
+          <Box p={4}>Aucun article dans la commande.</Box>
         )}
         <Flex
           w="100%"
@@ -210,42 +209,19 @@ const OrderDetailPage = () => {
             color="white"
             _hover={{ bg: 'green.300' }}
             onClick={handleCheckout}
+            isDisabled={total_amount < 15} // Désactiver le bouton si le montant est 0
           >
             Valider la commande
           </Button>
         </Flex>
       </Box>
 
-      {/* Modal pour les détails de commande */}
       {selectedOrder && (
-        <Modal isOpen={true} onClose={closeOrderDetails}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Détails de la commande</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Text textTransform="uppercase">
-                Commande : {selectedOrder.order_id}
-              </Text>
-              <Text>
-                Statut :{' '}
-                {selectedOrder.status === 'confirmed' ? 'Confirmée' : 'Prête'}
-              </Text>
-              <Text>
-                Date :{' '}
-                {new Date(selectedOrder.confirmed_date).toLocaleDateString()}
-              </Text>
-              <Text>Montant Total : {selectedOrder.total_amount} Euros</Text>
-              <Box>
-                {selectedOrder.items.map((item) => (
-                  <Text key={item.id}>
-                    {item.product.product_name} - Quantité : {item.quantity}
-                  </Text>
-                ))}
-              </Box>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
+        <OrderModal
+          isOpen={true}
+          onClose={closeOrderDetails}
+          order={selectedOrder}
+        />
       )}
     </BaseLayout>
   );

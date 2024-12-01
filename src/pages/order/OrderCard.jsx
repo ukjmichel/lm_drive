@@ -1,4 +1,5 @@
 import { Flex, Box, Text } from '@chakra-ui/react';
+import PropTypes from 'prop-types'; // Import de PropTypes
 
 const OrderCard = ({ order, onClick, isReady }) => {
   return (
@@ -25,6 +26,16 @@ const OrderCard = ({ order, onClick, isReady }) => {
       <Text>Statut : {isReady ? 'Prête' : 'Confirmée'}</Text>
     </Flex>
   );
+};
+
+// Validation des props avec PropTypes
+OrderCard.propTypes = {
+  order: PropTypes.shape({
+    order_id: PropTypes.string.isRequired, // `order_id` est une chaîne obligatoire
+    confirmed_date: PropTypes.string.isRequired, // `confirmed_date` est une chaîne obligatoire
+  }).isRequired, // L'objet `order` est obligatoire
+  onClick: PropTypes.func.isRequired, // `onClick` est une fonction obligatoire
+  isReady: PropTypes.bool.isRequired, // `isReady` est un booléen obligatoire
 };
 
 export default OrderCard;

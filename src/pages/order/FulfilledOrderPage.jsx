@@ -1,18 +1,12 @@
-import {
-  Box,
-  Flex,
-  Heading,
-  Text,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-} from '@chakra-ui/react';
+import { Box, Flex, Heading, Text } from '@chakra-ui/react';
+import { motion } from 'framer-motion';
 import { BaseLayout } from '../../components';
 import { getCustomerOrders, getCustomerOrder } from '../../api/apiClient';
 import { useState, useEffect } from 'react';
+import OrderModal from './OrderModal';
+
+// Création d'un composant Motion pour Flex
+const MotionFlex = motion.create(Flex);
 
 const FulfilledOrdersPage = () => {
   const [fulfilledOrders, setFulfilledOrders] = useState([]); // Stocker uniquement les commandes terminées
@@ -64,8 +58,8 @@ const FulfilledOrdersPage = () => {
           <Text>Chargement des commandes...</Text>
         ) : fulfilledOrders.length > 0 ? (
           <Box>
-            {fulfilledOrders.map((order) => (
-              <Flex
+            {fulfilledOrders.map((order, index) => (
+              <MotionFlex
                 key={order.order_id}
                 p={4}
                 mb={2}
@@ -76,6 +70,9 @@ const FulfilledOrdersPage = () => {
                 cursor="pointer"
                 _hover={{ bg: 'gray.100' }}
                 onClick={() => openOrderDetails(order.order_id)}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <Box>
                   <Text fontWeight="bold" textTransform="uppercase">
@@ -86,7 +83,7 @@ const FulfilledOrdersPage = () => {
                   </Text>
                 </Box>
                 <Text>Montant Total : {order.total_amount} Euros</Text>
-              </Flex>
+              </MotionFlex>
             ))}
           </Box>
         ) : (
@@ -96,33 +93,11 @@ const FulfilledOrdersPage = () => {
 
       {/* Modal pour les détails de la commande */}
       {selectedOrder && (
-        <Modal isOpen={true} onClose={closeOrderDetails}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Détails de la commande</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <Text fontWeight="bold" textTransform="uppercase">
-                Commande : {selectedOrder.order_id}
-              </Text>
-              <Text>
-                Date de Validation :{' '}
-                {new Date(selectedOrder.fulfilled_date).toLocaleDateString()}
-              </Text>
-              <Text>Montant Total : {selectedOrder.total_amount} Euros</Text>
-              <Box mt={4}>
-                <Heading size="sm" mb={2}>
-                  Articles
-                </Heading>
-                {selectedOrder.items.map((item) => (
-                  <Text key={item.id}>
-                    {item.product.product_name} - Quantité : {item.quantity}
-                  </Text>
-                ))}
-              </Box>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
+        <OrderModal
+          isOpen={true}
+          onClose={closeOrderDetails}
+          order={selectedOrder}
+        />
       )}
     </BaseLayout>
   );

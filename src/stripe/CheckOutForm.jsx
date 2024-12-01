@@ -21,20 +21,20 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const CheckoutForm = () => {
-  const [loadingOrder, setLoadingOrder] = useState(false); // Loading state for order fetching
-  const [loadingPayment, setLoadingPayment] = useState(false); // Loading state for payment processing
-  const [order, setOrder] = useState(null); // Store order details
-  const { order_id, items = [], total_amount } = order || {}; // Destructuring order details (safe for null)
+  const [loadingOrder, setLoadingOrder] = useState(false); // État de chargement des commandes
+  const [loadingPayment, setLoadingPayment] = useState(false); // État de chargement du paiement
+  const [order, setOrder] = useState(null); // Détails de la commande
+  const { order_id, items = [], total_amount } = order || {}; // Détails de la commande
 
   const stripe = useStripe();
   const elements = useElements();
   const toast = useToast();
   const navigate = useNavigate();
 
-  // Fetch the pending order
+  // Récupérer la commande en attente
   useEffect(() => {
     const fetchOrder = async () => {
-      setLoadingOrder(true); // Set loading state before making API call
+      setLoadingOrder(true);
       try {
         const response = await getCustomerOrders();
         const pendingOrder = response.find(
@@ -47,20 +47,28 @@ const CheckoutForm = () => {
           );
           setOrder(pendingOrderDetail);
         } else {
-          showToast('No Pending Orders', 'You have no pending orders.', 'info');
-          navigate('/'); // Redirect to homepage if no orders
+          showToast(
+            'Aucune commande en attente',
+            "Vous n'avez aucune commande en attente.",
+            'info'
+          );
+          navigate('/'); // Redirection vers la page d'accueil
         }
       } catch (error) {
-        showToast('Error Fetching Order', error.message, 'error');
+        showToast(
+          'Erreur lors de la récupération de la commande',
+          error.message,
+          'error'
+        );
       } finally {
-        setLoadingOrder(false); // Turn off loading state after fetch completes
+        setLoadingOrder(false);
       }
     };
 
     fetchOrder();
   }, [toast, navigate]);
 
-  // Helper function to display toast messages
+  // Fonction pour afficher les toasts
   const showToast = (title, description, status) => {
     toast({
       title,
@@ -71,13 +79,13 @@ const CheckoutForm = () => {
     });
   };
 
-  // Handle payment processing
+  // Gérer le paiement
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingPayment(true);
 
     if (!stripe || !elements) {
-      showToast('Stripe not loaded', 'Please try again later.', 'error');
+      showToast('Stripe non chargé', 'Veuillez réessayer plus tard.', 'error');
       setLoadingPayment(false);
       return;
     }
@@ -86,8 +94,8 @@ const CheckoutForm = () => {
 
     if (!cardElement) {
       showToast(
-        'Card Element Not Found',
-        'Please ensure the card element is available.',
+        'Élément de carte introuvable',
+        "Veuillez vérifier que l'élément de carte est disponible.",
         'error'
       );
       setLoadingPayment(false);
@@ -102,7 +110,7 @@ const CheckoutForm = () => {
         });
 
       if (paymentError) {
-        showToast('Payment Error', paymentError.message, 'error');
+        showToast('Erreur de paiement', paymentError.message, 'error');
         setLoadingPayment(false);
         return;
       }
@@ -118,11 +126,11 @@ const CheckoutForm = () => {
 
       if (!clientSecret) {
         showToast(
-          'Payment Failed',
-          'No clientSecret found. Please try again.',
+          'Échec du paiement',
+          'Aucun clientSecret trouvé. Veuillez réessayer.',
           'error'
         );
-        await updatePaymentStatus(order_id, 'failed'); // Update to failed on clientSecret error
+        await updatePaymentStatus(order_id, 'failed');
         setLoadingPayment(false);
         return;
       }
@@ -133,41 +141,45 @@ const CheckoutForm = () => {
         });
 
         if (stripeResponse.error) {
-          showToast('Payment Error', stripeResponse.error.message, 'error');
-          await updatePaymentStatus(order_id, 'failed'); // Update to failed on 3D Secure error
+          showToast(
+            'Erreur de paiement',
+            stripeResponse.error.message,
+            'error'
+          );
+          await updatePaymentStatus(order_id, 'failed');
         } else if (stripeResponse.paymentIntent) {
           const paymentIntent = stripeResponse.paymentIntent;
 
           if (paymentIntent.status === 'succeeded') {
             showToast(
-              'Payment Successful',
-              `Order ID: ${order_id} has been paid.`,
+              'Paiement réussi',
+              `La commande n° ${order_id.toUpperCase()} a été payée.`,
               'success'
             );
             await updatePaymentStatus(order_id, 'succeeded');
             setTimeout(() => navigate('/'), 2000);
           } else {
             showToast(
-              'Payment Failed',
-              'The payment could not be processed. Please try again.',
+              'Échec du paiement',
+              'Le paiement n’a pas pu être traité. Veuillez réessayer.',
               'error'
             );
-            await updatePaymentStatus(order_id, 'failed'); // Update to failed on unexpected intent status
+            await updatePaymentStatus(order_id, 'failed');
           }
         }
       } else {
         showToast(
-          'Payment Successful',
-          `Order ID: ${order_id} has been paid.`,
+          'Paiement réussi',
+          `La commande n° ${order_id.toUpperCase()} a été payée.`,
           'success'
         );
         await updatePaymentStatus(order_id, 'succeeded');
         setTimeout(() => navigate('/'), 2000);
       }
     } catch (apiError) {
-      console.error('API Error:', apiError);
-      showToast('API Error', apiError.message, 'error');
-      await updatePaymentStatus(order_id, 'failed'); // Update to failed on API error
+      console.error('Erreur API :', apiError);
+      showToast('Erreur API', apiError.message, 'error');
+      await updatePaymentStatus(order_id, 'failed');
     } finally {
       setLoadingPayment(false);
     }
@@ -176,7 +188,7 @@ const CheckoutForm = () => {
   return (
     <Box maxWidth="500px" mx="auto">
       <Heading as="h1" mb={4} textAlign="center">
-        Complete Your Payment
+        Finalisez votre paiement
       </Heading>
 
       <form onSubmit={handleSubmit}>
@@ -191,7 +203,7 @@ const CheckoutForm = () => {
                   borderRadius="md"
                   boxShadow="lg"
                   mb={2}
-                  _hover={{ boxShadow: 'xl' }} // Hover effect for better interactivity
+                  _hover={{ boxShadow: 'xl' }}
                   bg="white"
                 >
                   <Flex justify="space-between" align="center" mb={2}>
@@ -204,7 +216,7 @@ const CheckoutForm = () => {
                   </Flex>
                   <Flex justify="space-between" align="center">
                     <Text fontSize="sm" color="gray.500">
-                      Total:
+                      Total :
                     </Text>
                     <Text fontSize="sm" fontWeight="bold" color="teal.600">
                       €{(quantity * product.price).toFixed(2)}
@@ -214,7 +226,7 @@ const CheckoutForm = () => {
               ))}
               <Divider my={4} />
               <Flex justify="space-between" fontWeight="bold" fontSize="lg">
-                <Text>Total:</Text>
+                <Text>Total :</Text>
                 <Text color="teal.600">
                   €
                   {items
@@ -228,38 +240,37 @@ const CheckoutForm = () => {
               </Flex>
             </>
           ) : (
-            <Text>No items in this order.</Text>
+            <Text>Aucun article dans cette commande.</Text>
           )}
           <Divider />
           <FormControl id="payment-method">
-            <FormLabel>Payment Method</FormLabel>
+            <FormLabel>Méthode de paiement</FormLabel>
             <CardElement options={{ hidePostalCode: true }} />
           </FormControl>
           <Flex justifyContent="space-between" alignItems="center">
-            <Text>Total: €{total_amount}</Text>
+            <Text>Total : €{total_amount}</Text>
             <Button
               type="submit"
               colorScheme="teal"
-              isLoading={loadingPayment || loadingOrder} // Disable button during loading
+              isLoading={loadingPayment || loadingOrder}
               isDisabled={
                 !stripe || !total_amount || loadingOrder || loadingPayment
               }
             >
-              Pay Now
+              Payer maintenant
             </Button>
           </Flex>
         </VStack>
       </form>
 
-      {/* Button to return to the order detail page */}
       <Button
         mt={4}
-        onClick={() => navigate(`/cart`)} // Navigate back to the order detail page
+        onClick={() => navigate(`/cart`)}
         colorScheme="gray"
         variant="outline"
         isDisabled={loadingOrder}
       >
-        Return to Order Details
+        Retour aux détails de la commande
       </Button>
     </Box>
   );

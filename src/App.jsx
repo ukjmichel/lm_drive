@@ -8,6 +8,8 @@ import {
   SignUpPage,
   StoreListPage,
   StorePage,
+  UserProfilPage,
+  CheckoutPage,
 } from './pages';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './hook/AuthContext';
@@ -15,7 +17,6 @@ import { AdminOrdersListPage, AdminOrderDetailPage } from './pages/admin';
 import 'leaflet/dist/leaflet.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import CheckoutPage from './pages/CheckoutPage';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
                 element={<AdminOrderDetailPage />}
               />
               <Route path="/store/:id" element={<StoreListPage />} />
+              <Route path="/profil" element={<UserProfilPage />} />
             </Routes>
           </ChakraProvider>
         </BrowserRouter>

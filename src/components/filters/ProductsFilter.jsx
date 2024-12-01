@@ -84,7 +84,7 @@ const ProductsFilter = ({ handleSelectBrand, handleSelectSubcategories }) => {
           width={{ base: '100vw', sm: '100vw', md: '400px' }}
         >
           <DrawerCloseButton />
-          <DrawerHeader>Filter Options</DrawerHeader>
+          <DrawerHeader> Options</DrawerHeader>
           <DrawerBody>
             <Heading fontSize={24}>Sous-catégories</Heading>
             <Flex flexDir={'column'}>
