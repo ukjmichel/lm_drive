@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'; // Import PropTypes
-import { useAuth } from '../../hook/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import BaseFooter from '../sections/BaseFooter';
 import BaseNavbar from '../navbar/BaseNavbar';
 import { Box } from '@chakra-ui/react';

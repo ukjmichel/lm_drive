@@ -1,78 +1,53 @@
 import { useEffect, useState } from 'react';
 import { BaseLayout } from '../../components';
-import {
-  createCustomerOrder,
-  fetchCustomerData,
-  getCustomerOrders,
-  getFilteredProducts,
-} from '../../api/apiClient';
 import { Fade, Grid, GridItem, Text } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../hook/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import ProductsFilter from '../../components/filters/ProductsFilter';
 import ProductAddToCart from './ProductAddToCart';
+import { useData } from '../../context/DataContext';
 
 const StoreListPage = () => {
-  const [products, setProducts] = useState([]);
-  const [orderId, setOrderId] = useState();
+  const { products, pendingOrderId } = useData([]); // Store all products
+  const [filteredProducts, setFilteredProducts] = useState([]); // Filtered products for display
   const [subcategories, setSubcategories] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
   const { auth } = useAuth();
-  const { id } = useParams();
+  const { id } = useParams(); // Category ID from route
 
   const handleSelectBrand = (value) => {
     setSelectedBrand(value); // Update the selected brand state
   };
 
   const handleSelectSubcategories = (value) => {
-    setSubcategories(value); // Update the selected brand state
+    setSubcategories(value); // Update the subcategories state
   };
 
-  const getProduct = async () => {
-    try {
-      const response = await getFilteredProducts({
-        categorie: id,
-        subcategories: subcategories,
-        brand: selectedBrand,
-      });
-      setProducts(response);
-    } catch (error) {
-      console.log('Error:', error);
-    }
-  };
+  const filterProducts = (allProducts) => {
+    // Filter based on category ID, brand, and subcategories
+    const filtered = allProducts.filter((product) => {
+      const matchesCategory = id ? product.category.name === id : true;
+      const matchesBrand = selectedBrand
+        ? product.brand === selectedBrand
+        : true;
+      const matchesSubcategories = subcategories
+        ? product.subcategories.some((sub) => sub.name === subcategories)
+        : true;
 
-  const getOrderId = async () => {
-    try {
-      let response = await getCustomerOrders();
-      let pendingOrder = response.filter((order) => order.status === 'pending');
-      if (pendingOrder.length === 0) {
-        const customerData = await fetchCustomerData();
-        const customerId = customerData[0].customer_id;
-        pendingOrder = await createCustomerOrder({
-          customerId: customerId,
-          storeId: 'CRE71780',
-        });
-        response = await getCustomerOrders();
-        pendingOrder = response.filter((order) => order.status === 'pending');
-      }
+      return matchesCategory && matchesBrand && matchesSubcategories;
+    });
 
-      setOrderId(pendingOrder[0].order_id);
-    } catch (error) {
-      console.log('Error:', error);
-    }
+    setFilteredProducts(filtered);
   };
 
   useEffect(() => {
-    getProduct();
-  }, [selectedBrand, subcategories]); // Add selectedBrand and subcategories as dependencies
-
-  useEffect(() => {
-    getOrderId();
-  }, []);
+    if (products.length > 0) {
+      filterProducts(products); // Reapply filter on changes
+    }
+  }, [id, selectedBrand, subcategories, products]); // Refilter when filters change
 
   return (
     <BaseLayout>
-      {/* Pass the handleOnSelectBrand function as a prop to ProductsFilter */}
       <ProductsFilter
         handleSelectBrand={handleSelectBrand}
         handleSelectSubcategories={handleSelectSubcategories}
@@ -88,9 +63,8 @@ const StoreListPage = () => {
           xl: '1fr 1fr 1fr 1fr',
         }}
       >
-        {products && products.length > 0 ? (
-          products.map((product, index) => (
-            // Wrap each ProductAddToCart component in a Fade with a staggered delay
+        {filteredProducts && filteredProducts.length > 0 ? (
+          filteredProducts.map((product, index) => (
             <GridItem
               display={'grid'}
               justifyContent={'center'}
@@ -98,14 +72,18 @@ const StoreListPage = () => {
             >
               <Fade
                 in
-                transition={{ enter: { duration: 0.4, delay: index * 0.1 } }} // Dynamic delay for each product
+                transition={{ enter: { duration: 0.4, delay: index * 0.1 } }}
               >
-                <ProductAddToCart orderId={orderId} {...product} auth={auth} />
+                <ProductAddToCart
+                  orderId={pendingOrderId}
+                  {...product}
+                  auth={auth}
+                />
               </Fade>
             </GridItem>
           ))
         ) : (
-          <Text>No products available.</Text> // Display a message or handle the empty state
+          <Text>No products available.</Text>
         )}
       </Grid>
     </BaseLayout>

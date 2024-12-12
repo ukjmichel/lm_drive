@@ -13,6 +13,7 @@ const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const result = await getToken(username, password);
+      console.log(result)
 
       if (result.success) {
         //console.log('Tokens reçus :', result.data);

@@ -80,12 +80,12 @@ const BaseNavbar = () => {
           direction={'row'}
           spacing={6}
         >
-          <NavLink to={'/signin'}>
+          <NavLink to="/signin">
             <Button fontSize={'sm'} fontWeight={400}>
               Se connecter
             </Button>
           </NavLink>
-          <NavLink to={'/signup'}>
+          <NavLink to="/signup">
             <Button
               display={'inline-flex'}
               fontSize={'sm'}
@@ -119,50 +119,6 @@ const DesktopNav = () => {
   );
 };
 
-const DesktopSubNav = ({ label, href, subLabel }) => {
-  return (
-    <Box
-      as="a"
-      href={href}
-      role={'group'}
-      display={'block'}
-      p={2}
-      rounded={'md'}
-      _hover={{ bg: useColorModeValue('pink.50', 'gray.900') }}
-    >
-      <Stack direction={'row'} align={'center'}>
-        <Box>
-          <Text
-            transition={'all .3s ease'}
-            _groupHover={{ color: 'pink.400' }}
-            fontWeight={500}
-          >
-            {label}
-          </Text>
-          <Text fontSize={'sm'}>{subLabel}</Text>
-        </Box>
-        <Flex
-          transition={'all .3s ease'}
-          transform={'translateX(-10px)'}
-          opacity={0}
-          _groupHover={{ opacity: '100%', transform: 'translateX(0)' }}
-          justify={'flex-end'}
-          align={'center'}
-          flex={1}
-        >
-          <Icon color={'pink.400'} w={5} h={5} as={ChevronRightIcon} />
-        </Flex>
-      </Stack>
-    </Box>
-  );
-};
-
-DesktopSubNav.propTypes = {
-  label: PropTypes.string.isRequired,
-  href: PropTypes.string,
-  subLabel: PropTypes.string,
-};
-
 const MobileNav = () => {
   return (
     <Stack
@@ -177,25 +133,26 @@ const MobileNav = () => {
   );
 };
 
-const MobileNavItem = ({ label, children, href }) => {
+const MobileNavItem = ({ label, children, url }) => {
   const { isOpen, onToggle } = useDisclosure();
 
   return (
     <Stack spacing={4} onClick={children && onToggle}>
       <Box
         py={2}
-        as="a"
-        href={href ?? '#'}
+        display={'flex'}
         justifyContent="space-between"
         alignItems="center"
         _hover={{ textDecoration: 'none' }}
       >
-        <Text
-          fontWeight={600}
-          color={useColorModeValue('gray.600', 'gray.200')}
-        >
-          {label}
-        </Text>
+        <NavLink to={url} style={{ width: '100%' }}>
+          <Text
+            fontWeight={600}
+            color={useColorModeValue('gray.600', 'gray.200')}
+          >
+            {label}
+          </Text>
+        </NavLink>
         {children && (
           <Icon
             as={ChevronDownIcon}
@@ -217,9 +174,9 @@ const MobileNavItem = ({ label, children, href }) => {
         >
           {children &&
             children.map((child) => (
-              <Box as="a" key={child.label} py={2} href={child.href}>
-                {child.label}
-              </Box>
+              <NavLink key={child.label} to={child.url}>
+                <Box py={2}>{child.label}</Box>
+              </NavLink>
             ))}
         </Stack>
       </Collapse>
@@ -232,10 +189,10 @@ MobileNavItem.propTypes = {
   children: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string,
-      href: PropTypes.string,
+      url: PropTypes.string,
     })
   ),
-  href: PropTypes.string,
+  url: PropTypes.string,
 };
 
 const NAV_ITEMS = [

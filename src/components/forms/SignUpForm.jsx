@@ -17,7 +17,7 @@ import {
 import { useState } from 'react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { createAccount } from '../../api/apiClient'; // Ajustez selon votre implémentation
-import { useAuth } from '../../hook/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const SignUpForm = () => {
   const { login } = useAuth();

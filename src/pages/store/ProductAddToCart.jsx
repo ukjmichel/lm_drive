@@ -28,7 +28,7 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { addItemToOrder } from '../../api/apiClient';
-import { useAuth } from '../../hook/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);

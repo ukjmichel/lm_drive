@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { BaseLayout, SignInForm } from '../components';
-import { useAuth } from '../hook/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useEffect } from 'react';
 
 const SignInPage = () => {
