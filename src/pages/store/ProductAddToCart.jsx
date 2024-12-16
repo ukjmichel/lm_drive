@@ -39,12 +39,12 @@ const ProductAddToCart = ({
   product_id,
   product_name,
   brand,
-  price,
+  price_ttc,
   orderId,
   image1,
   image2,
   image3,
-  stock_summary = {},
+  stocks = [],
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [quantityInStock, setQuantityInStock] = useState(0);
@@ -53,22 +53,22 @@ const ProductAddToCart = ({
   const navigate = useNavigate();
   const { auth } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure(); // Modal controls
-  const priceValue = parseFloat(price);
+  const priceValue = parseFloat(price_ttc);
   const formattedPrice = !isNaN(priceValue) ? priceValue.toFixed(2) : '0.00';
   const [currentImage, setCurrentImage] = useState(image1);
 
   useEffect(() => {
-    if (auth && stock_summary && stock_summary.stock_details) {
-      const stock = stock_summary.stock_details['LAO MARKET CRECHE'];
+    if (auth && Array.isArray(stocks)) {
+      const stock = stocks.find((item) => item.store === 'CRE71780'); // Adjust store ID as needed
       if (stock) {
-        setQuantityInStock(stock.quantity_in_stock);
+        setQuantityInStock(stock.quantity);
         setExpirationDate(stock.expiration_date);
       } else {
         setQuantityInStock(0);
         setExpirationDate(null);
       }
     }
-  }, [auth, stock_summary]);
+  }, [auth, stocks]);
 
   const handleAddToCart = async () => {
     if (auth) {
@@ -77,8 +77,8 @@ const ProductAddToCart = ({
         setQuantity(1);
 
         toast({
-          title: 'Product added to cart',
-          description: `${product_name} has been added to your cart.`,
+          title: 'Produit ajouté au panier',
+          description: `${product_name} a été ajouté à votre panier.`,
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -86,8 +86,9 @@ const ProductAddToCart = ({
       } catch (error) {
         console.error(error);
         toast({
-          title: 'Failed to add product',
-          description: 'There was an issue adding the product to your cart.',
+          title: "Échec de l'ajout du produit",
+          description:
+            "Un problème est survenu lors de l'ajout du produit à votre panier.",
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -151,7 +152,7 @@ const ProductAddToCart = ({
             <NumberInput
               value={quantity}
               min={1}
-              max={20}
+              max={quantityInStock > 0 ? quantityInStock : 20}
               onChange={(valueString) => setQuantity(parseInt(valueString, 10))}
             >
               <NumberInputField />
@@ -172,36 +173,17 @@ const ProductAddToCart = ({
           <ModalBody>
             <Image src={currentImage} alt={product_name} borderRadius="lg" />
             <HStack spacing="4" mt="4" justify="center">
-              {image1 && (
+              {[image1, image2, image3].filter(Boolean).map((image, index) => (
                 <Image
-                  src={image1}
-                  alt="Thumbnail 1"
+                  key={index}
+                  src={image}
+                  alt={`Thumbnail ${index + 1}`}
                   boxSize="50px"
-                  onClick={() => setCurrentImage(image1)}
+                  onClick={() => setCurrentImage(image)}
                   cursor="pointer"
-                  border={currentImage === image1 ? '2px solid blue' : 'none'}
+                  border={currentImage === image ? '2px solid blue' : 'none'}
                 />
-              )}
-              {image2 && (
-                <Image
-                  src={image2}
-                  alt="Thumbnail 2"
-                  boxSize="50px"
-                  onClick={() => setCurrentImage(image2)}
-                  cursor="pointer"
-                  border={currentImage === image2 ? '2px solid blue' : 'none'}
-                />
-              )}
-              {image3 && (
-                <Image
-                  src={image3}
-                  alt="Thumbnail 3"
-                  boxSize="50px"
-                  onClick={() => setCurrentImage(image3)}
-                  cursor="pointer"
-                  border={currentImage === image3 ? '2px solid blue' : 'none'}
-                />
-              )}
+              ))}
             </HStack>
           </ModalBody>
         </ModalContent>
@@ -214,19 +196,18 @@ ProductAddToCart.propTypes = {
   product_id: PropTypes.string.isRequired,
   product_name: PropTypes.string.isRequired,
   brand: PropTypes.string.isRequired,
-  price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  price_ttc: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   orderId: PropTypes.string,
   image1: PropTypes.string,
   image2: PropTypes.string,
   image3: PropTypes.string,
-  stock_summary: PropTypes.shape({
-    stock_details: PropTypes.objectOf(
-      PropTypes.shape({
-        quantity_in_stock: PropTypes.number,
-        expiration_date: PropTypes.string,
-      })
-    ),
-  }),
+  stocks: PropTypes.arrayOf(
+    PropTypes.shape({
+      store: PropTypes.string.isRequired,
+      quantity: PropTypes.number.isRequired,
+      expiration_date: PropTypes.string.isRequired,
+    })
+  ),
 };
 
 export default ProductAddToCart;

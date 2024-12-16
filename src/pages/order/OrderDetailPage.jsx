@@ -22,7 +22,7 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState({});
   const [otherOrders, setOtherOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const { order_id, items = [], total_amount } = order;
+  const { order_id, items = [], total_ttc } = order;
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -33,7 +33,6 @@ const OrderDetailPage = () => {
       const confirmedAndReadyOrders = response.filter(
         (order) => order.status === 'confirmed' || order.status === 'ready'
       );
-
       setOtherOrders(confirmedAndReadyOrders);
 
       if (!pendingOrder) {
@@ -202,14 +201,14 @@ const OrderDetailPage = () => {
           justifyContent="space-between"
         >
           <Text fontSize="lg" fontWeight="bold">
-            Montant Total : {total_amount?.toFixed(2)} Euros
+            Montant Total : {total_ttc?.toFixed(2)} Euros
           </Text>
           <Button
             bg="green.400"
             color="white"
             _hover={{ bg: 'green.300' }}
             onClick={handleCheckout}
-            isDisabled={total_amount < 15} // Désactiver le bouton si le montant est 0
+            isDisabled={total_ttc < 15} // Désactiver le bouton si le montant est 0
           >
             Valider la commande
           </Button>

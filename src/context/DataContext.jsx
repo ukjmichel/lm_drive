@@ -14,6 +14,7 @@ const DataProvider = ({ children }) => {
   const [pendingOrderId, setPendingOrderId] = useState();
 
   const getProduct = async () => {
+    
     try {
       const response = await fetchAllProducts();
       setProducts(response); // Store all products in context
@@ -24,7 +25,7 @@ const DataProvider = ({ children }) => {
 
   useEffect(() => {
     getProduct();
-  });
+  }, []);
 
   //
 

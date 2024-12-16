@@ -16,7 +16,7 @@ import { DeleteIcon } from '@chakra-ui/icons';
 import { debounce } from 'lodash';
 
 const OrderLine = ({ product, quantity, id, order_id, onDelete, onUpdate }) => {
-  const { product_name, price } = product;
+  const { product_name, price_ttc } = product;
   const [currentQuantity, setCurrentQuantity] = useState(quantity);
   const [error, setError] = useState(null);
 
@@ -76,7 +76,7 @@ const OrderLine = ({ product, quantity, id, order_id, onDelete, onUpdate }) => {
           <NumberDecrementStepper />
         </NumberInputStepper>
       </NumberInput>
-      <Box w={'150px'}>{`Prix ttc: ${price} Euros`}</Box>
+      <Box w={'150px'}>{`Prix ttc: ${price_ttc} Euros`}</Box>
       <IconButton
         aria-label={`Delete ${product_name}`}
         icon={<DeleteIcon />}
@@ -95,7 +95,7 @@ const OrderLine = ({ product, quantity, id, order_id, onDelete, onUpdate }) => {
 OrderLine.propTypes = {
   product: PropTypes.shape({
     product_name: PropTypes.string.isRequired,
-    price: PropTypes.number.isRequired,
+    price_ttc: PropTypes.number.isRequired,
     brand: PropTypes.string,
   }).isRequired,
   quantity: PropTypes.number.isRequired,

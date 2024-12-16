@@ -84,7 +84,7 @@ const OrderModal = ({ isOpen, onClose, order }) => {
                 py={1}
                 borderRadius="md"
               >
-                {order.total_amount.toFixed(2)} Euros
+                {order.total_ttc.toFixed(2)} Euros
               </Text>
             </Flex>
           </Box>
@@ -126,7 +126,7 @@ OrderModal.propTypes = {
     order_id: PropTypes.string.isRequired,
     status: PropTypes.string.isRequired,
     confirmed_date: PropTypes.string.isRequired,
-    total_amount: PropTypes.number.isRequired,
+    total_ttc: PropTypes.number.isRequired,
     items: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,

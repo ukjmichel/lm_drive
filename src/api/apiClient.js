@@ -6,7 +6,7 @@ let refreshSubscribers = []; // Queue for requests while the token is refreshing
 
 // Create an Axios instance
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL, // Ensure this ends with '/'
+  baseURL: import.meta.env.VITE_API_BASE_URL_TEST, // Ensure this ends with '/'
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -537,5 +537,41 @@ export const updateCustomerInfo = async (customer_id, payload) => {
     } else {
       throw new Error('Impossible de contacter le serveur.');
     }
+  }
+};
+
+export const downloadFacture = async (order_id) => {
+  //console.log(`Téléchargement de la facture pour la commande : ${order_id}`);
+
+  try {
+    const response = await apiClient.get(`api/orders/${order_id}/invoice/`, {
+      responseType: 'blob', // Pour gérer les fichiers binaires
+    });
+
+    // Vérifie si la réponse contient des données
+    if (!response || !response.data) {
+      throw new Error('Aucun fichier reçu depuis le serveur.');
+    }
+
+    // Créer un lien pour télécharger le fichier
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `facture_${order_id}.pdf`); // Nom du fichier téléchargé
+    document.body.appendChild(link);
+    link.click();
+
+    // Nettoyer le lien après le téléchargement
+    link.parentNode.removeChild(link);
+
+    // Révoquer l'URL blob pour éviter les fuites de mémoire
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Erreur lors du téléchargement de la facture :', error);
+
+    // Message d'erreur pour l'utilisateur
+    alert(
+      "Une erreur s'est produite lors du téléchargement de la facture. Vérifiez votre connexion ou contactez le support."
+    );
   }
 };
